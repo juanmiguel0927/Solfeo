@@ -57,15 +57,35 @@
             <h1 class="text-2xl md:text-3xl font-bold mb-1 md:mb-2 text-slate-900">Arte del Solfeo</h1>
             <p class="text-sm md:text-base text-slate-600">Entrena tu oído. Mejora tu lectura. Potencia tu música.</p>
         </div>
-        <div class="flex gap-2 w-full md:w-auto">
-            <button onclick="document.getElementById('help-modal').showModal()" class="flex-1 md:flex-none bg-slate-200 text-slate-800 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-slate-300 transition-colors">
+        
+        <!-- Panel de Telemetría (Modo Estudio) -->
+        <div class="bg-slate-800 text-slate-100 rounded-md px-4 py-2 flex gap-6 items-center shadow-inner text-sm md:text-base font-mono w-full md:w-auto justify-center">
+            <div class="flex items-center gap-2" title="Tiempo de sesión activa">
+                <span class="text-slate-400">⏱</span>
+                <span id="session-timer">00:00</span>
+            </div>
+            <div class="w-px h-4 bg-slate-600"></div>
+            <div class="flex items-center gap-2" title="Ejercicios practicados en esta sesión">
+                <span class="text-slate-400">📖</span>
+                <span id="session-counter">0</span> <span class="text-xs text-slate-400">ejercicios</span>
+            </div>
+        </div>
+
+        <div class="flex gap-2 w-full md:w-auto flex-wrap justify-end">
+            <button onclick="exportToMusicXML()" class="bg-blue-100 text-blue-800 border border-blue-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-blue-200 transition-colors" title="Descargar MusicXML [X]">
+                ↓ XML
+            </button>
+            <button onclick="exportToJPEG()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-emerald-200 transition-colors" title="Descargar Imagen JPEG [J]">
+                ↓ JPEG
+            </button>
+            <button onclick="document.getElementById('help-modal').showModal()" class="bg-slate-200 text-slate-800 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-slate-300 transition-colors" title="Ayuda y Atajos [H]">
                 ? Ayuda
             </button>
-            <button id="btn-toggle-favs" class="flex-1 md:flex-none bg-amber-100 text-amber-800 border border-amber-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-amber-200 transition-colors">
+            <button id="btn-toggle-favs" class="bg-amber-100 text-amber-800 border border-amber-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-amber-200 transition-colors" title="Mis Favoritos">
                 ★ Mis Favoritos
             </button>
-            <button id="btn-fullscreen" class="flex-1 md:flex-none bg-slate-200 text-slate-800 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-slate-300 transition-colors">
-                ⛶ Pantalla Completa
+            <button id="btn-fullscreen" class="bg-slate-200 text-slate-800 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-slate-300 transition-colors" title="Pantalla Completa [P]">
+                ⛶ Pantalla
             </button>
         </div>
     </header>
@@ -80,7 +100,7 @@
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Niveles Estructurales</label>
                         <select id="level-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border focus:ring-red-500 focus:border-red-500 transition-colors text-sm md:text-base">
                             <optgroup label="Melodía Diatónica Estricta">
-                                <option value="1">Nivel 1: Grados 1, 2, 3 (Mayor)</option>
+                                <option value="1" selected>Nivel 1: Grados 1, 2, 3 (Mayor)</option>
                                 <option value="2">Nivel 2: Grados 1, 2, b3 (Menor)</option>
                                 <option value="3">Nivel 3: 1, 2, 3 + 4, 7 inferior (Mayor)</option>
                                 <option value="4">Nivel 4: 1, 2, b3 + 4, 7 inferior (Menor)</option>
@@ -94,7 +114,7 @@
                                 <option value="10">Nivel 10: Escala Completa (Menor)</option>
                             </optgroup>
                             <optgroup label="Armonía Cromática Avanzada (G3-G5)">
-                                <option value="11" selected>Nivel 11: Dominante con 7ma e Inversiones</option>
+                                <option value="11">Nivel 11: Dominante con 7ma e Inversiones</option>
                                 <option value="12">Nivel 12: Acorde de VII7 (Semi y Disminuido)</option>
                                 <option value="13">Nivel 13: Dominantes Secundarias (V7/x)</option>
                                 <option value="14">Nivel 14: Disminuidos Secundarios (vii°7/x)</option>
@@ -241,42 +261,91 @@
     </main>
 
     <!-- HELP MODAL -->
-    <dialog id="help-modal" class="rounded-lg shadow-2xl p-0 w-11/12 max-w-2xl border border-slate-200 backdrop:bg-slate-900/50">
-        <div class="p-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">Manual y Atajos (Shortcuts)</h2>
-            <div class="space-y-4 text-sm text-slate-700">
-                <div class="bg-slate-50 p-4 rounded border border-slate-200">
-                    <h3 class="font-bold text-slate-900 mb-2">Atajos de Teclado</h3>
-                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <li><kbd class="bg-white border rounded px-1 shadow-sm">Space</kbd> - Reproducir / Detener</li>
-                        <li><kbd class="bg-white border rounded px-1 shadow-sm">G</kbd> - Generar Nuevo Ejercicio</li>
-                        <li><kbd class="bg-white border rounded px-1 shadow-sm">M</kbd> - Alternar Metrónomo Continuo</li>
-                        <li><kbd class="bg-white border rounded px-1 shadow-sm">F</kbd> - Guardar en Favoritos</li>
-                        <li><kbd class="bg-white border rounded px-1 shadow-sm">H</kbd> / <kbd class="bg-white border rounded px-1 shadow-sm">?</kbd> - Abrir esta Ayuda</li>
-                        <li><kbd class="bg-white border rounded px-1 shadow-sm">ESC</kbd> - Cerrar ventanas/Salir de pantalla completa</li>
+    <dialog id="help-modal" class="rounded-lg shadow-2xl p-0 w-11/12 max-w-3xl border border-slate-200 backdrop:bg-slate-900/50">
+        <div class="p-6 flex flex-col h-full max-h-[85vh]">
+            <h2 class="text-2xl font-bold text-slate-900 mb-4 flex-shrink-0">Manual de Usuario y Plan de Estudios</h2>
+            
+            <div class="overflow-y-auto flex-grow pr-2 space-y-6 text-sm text-slate-700 custom-scrollbar">
+                
+                <!-- SECCIÓN 1: HERRAMIENTAS -->
+                <section>
+                    <h3 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-1 mb-3">Herramientas del Motor Estocástico</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p><strong>Niveles Estructurales:</strong> Define la matriz matemática de alturas, acordes permitidos y las reglas de conducción de voces (diatónicas o cromáticas).</p>
+                            <p class="mt-2"><strong>Clave y Rango:</strong> Adapta el centro de gravedad del ejercicio a la tesitura natural de la voz o instrumento seleccionado.</p>
+                            <p class="mt-2"><strong>Compás y Complejidad:</strong> El motor reconoce la unidad real del compás. Las complejidades altas fuerzan agrupaciones y subdivisiones estrictas sin desbordar la métrica.</p>
+                            <p class="mt-2"><strong>Afinación Previa:</strong> Genera una progresión armónica de anclaje (ej. I-IV-V-I). <em>Nota: El V grado siempre es mayor (Dominante) para establecer la tonalidad, incluso en modos menores.</em></p>
+                        </div>
+                        <div>
+                            <p><strong>Deslizadores (Tempo y Volúmenes):</strong> Controlan la velocidad de reproducción y la mezcla en tiempo real entre la guía melódica, el metrónomo percusivo y los acordes de la cadencia.</p>
+                            <p class="mt-2"><strong>Telemetría (Panel Superior):</strong> Mide el tiempo efectivo de sesión (⏱) y cuenta únicamente los ejercicios que han sido escuchados/reproducidos hasta el final (📖).</p>
+                            <p class="mt-2"><strong>Exportación (XML/JPEG):</strong> Permite guardar la partitura renderizada en imagen o exportar la matriz lógica a un archivo legible por editores como MuseScore o Sibelius.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 2: PLAN DE ESTUDIOS (NIVELES) -->
+                <section>
+                    <h3 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-1 mb-3">Plan de Estudios: Niveles Melódicos</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <h4 class="font-bold text-slate-900 mb-1">Diatonismo Básico (Restricción Absoluta)</h4>
+                            <p><strong>Nivel 1 (Mayor) y Nivel 2 (Menor):</strong> Restringidos rígidamente a los grados 1, 2, 3 (o b3). El motor tiene prohibido usar notas externas, lo que fuerza contornos repetitivos ideales para principiantes absolutos.</p>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <h4 class="font-bold text-slate-900 mb-1">Expansión Diatónica Lineal</h4>
+                            <p><strong>Niveles 3 y 4 (Mayor/Menor):</strong> Incorpora la sensible inferior (7) y la subdominante (4). Comienzan las reglas de resolución obligatoria (ej. 4 resuelve a 3).</p>
+                            <p class="mt-1"><strong>Niveles 5 y 6 (Mayor/Menor):</strong> Expansión a la 5ta y 6ta mayor/menor. El motor exige compensación de saltos y atracciones tonales más complejas.</p>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <h4 class="font-bold text-slate-900 mb-1">Estructuras Arpegiadas y Escalas</h4>
+                            <p><strong>Niveles 7 y 8 (Cadencias):</strong> La melodía abandona el grado conjunto y se obliga a delinear arpegios sobre una progresión interna de I-IV-V-I. El motor calcula las notas más cercanas del acorde activo.</p>
+                            <p class="mt-1"><strong>Niveles 9 y 10 (Escala Completa):</strong> Utiliza todos los grados diatónicos de la tonalidad, balanceando contrapunto clásico con direccionalidad funcional.</p>
+                        </div>
+
+                        <div class="bg-red-50 p-3 rounded border border-red-200">
+                            <h4 class="font-bold text-red-900 mb-1">Armonía Cromática Avanzada (Motor de Voice Leading)</h4>
+                            <p class="text-red-800 text-xs mb-2"><em>A partir de aquí, las reglas clásicas de compensación de saltos se apagan. El motor busca el enlace parsimonioso (1 a 4 semitonos) dictado por el choque cromático.</em></p>
+                            <ul class="list-disc pl-5 space-y-1 text-red-900">
+                                <li><strong>Nivel 11:</strong> Acordes de Dominante con Séptima (V7) y sus inversiones.</li>
+                                <li><strong>Nivel 12:</strong> Acordes de Séptima Disminuida y Semidisminuida (vii°7).</li>
+                                <li><strong>Nivel 13:</strong> Dominantes Secundarias. Introduce alteraciones accidentales que resuelven temporalmente a otros grados diatónicos.</li>
+                                <li><strong>Nivel 14:</strong> Disminuidos Secundarios. Forzamiento de lectura de intervalos de tritono y segundas aumentadas.</li>
+                                <li><strong>Nivel 15:</strong> Acordes de Sexta Aumentada (Italiana, Francesa, Alemana) y Sexta Napolitana. Tensión máxima hacia la dominante.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 3: ATAJOS -->
+                <section>
+                    <h3 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-1 mb-3">Atajos de Teclado (Shortcuts)</h3>
+                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4">
+                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">Space</kbd> <span class="ml-1">Reproducir / Detener</span></li>
+                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">G</kbd> <span class="ml-1">Generar Nuevo Ejercicio</span></li>
+                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">M</kbd> <span class="ml-1">Metrónomo Continuo (On/Off)</span></li>
+                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">F</kbd> <span class="ml-1">Guardar en Favoritos</span></li>
+                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">P</kbd> <span class="ml-1">Pantalla Completa</span></li>
+                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">X</kbd> <span class="ml-1">Exportar a MusicXML</span></li>
+                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">J</kbd> <span class="ml-1">Exportar a JPEG</span></li>
+                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">ESC</kbd> <span class="ml-1">Cerrar ventanas o salir</span></li>
                     </ul>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-900">Estructura del Sistema Paginado</h3>
-                    <p>El pentagrama ahora ajusta automáticamente el número de compases por línea según el tamaño de su pantalla (1 en móviles, 2 en tablets, 4 en monitores) para evitar amontonamiento y garantizar la lectura rítmica.</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-900">Niveles 1 y 2 (Restricción Absoluta)</h3>
-                    <p>En los niveles básicos, el algoritmo está bloqueado matemáticamente para NO usar notas de paso fuera de los grados (1, 2, 3 o b3).</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-900">Generación Rítmica Determinista</h3>
-                    <p>El algoritmo reconoce la unidad real del compás (ej. Blanca en 2/2) evitando matemáticamente que la figura sobrepase la capacidad del mismo, respetando siempre el pulso en niveles de menor complejidad.</p>
-                </div>
+                </section>
+                
             </div>
-            <div class="mt-6 flex justify-end">
-                <button onclick="document.getElementById('help-modal').close()" class="bg-slate-800 text-white px-4 py-2 rounded font-medium hover:bg-slate-900">Entendido</button>
+            
+            <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end flex-shrink-0">
+                <button onclick="document.getElementById('help-modal').close()" class="bg-slate-800 text-white px-6 py-2 rounded-md font-medium hover:bg-slate-900 transition-colors">Entendido</button>
             </div>
         </div>
     </dialog>
 
     <footer class="mt-auto pt-8 pb-4 text-center text-sm font-medium text-slate-500">
-        Créditos: Juan Miguel Rios Redondo
+        Desarrollado por: Juan Miguel Rios Redondo
     </footer>
 
     <script>
@@ -294,7 +363,51 @@
 
         let favorites = [];
         let currentExerciseId = null;
+        
+        // --- TELEMETRÍA (MODO ESTUDIO) ---
+        let studySeconds = 0;
+        let exercisesPracticed = 0;
+        let timerInterval = null;
 
+        function updateTimerDisplay() {
+            const mins = Math.floor(studySeconds / 60).toString().padStart(2, '0');
+            const secs = (studySeconds % 60).toString().padStart(2, '0');
+            document.getElementById('session-timer').innerText = `${mins}:${secs}`;
+        }
+
+        function startStudyTimer() {
+            if (!timerInterval) {
+                timerInterval = setInterval(() => {
+                    studySeconds++;
+                    updateTimerDisplay();
+                }, 1000);
+            }
+        }
+
+        // --- SISTEMA DE PERSISTENCIA (LOCALSTORAGE) ---
+        function saveConfigToStorage() {
+            localStorage.setItem('artesolfeo_level', document.getElementById('level-select').value);
+            localStorage.setItem('artesolfeo_clef', document.getElementById('clef-select').value);
+            localStorage.setItem('artesolfeo_timesig', document.getElementById('timesig-select').value);
+            localStorage.setItem('artesolfeo_rhythm', document.getElementById('rhythm-select').value);
+        }
+
+        function loadConfigFromStorage() {
+            const savedLevel = localStorage.getItem('artesolfeo_level');
+            const savedClef = localStorage.getItem('artesolfeo_clef');
+            const savedTimeSig = localStorage.getItem('artesolfeo_timesig');
+            const savedRhythm = localStorage.getItem('artesolfeo_rhythm');
+
+            // Siempre fuerza el nivel 1 si no hay nada guardado (como solicitó el usuario)
+            if (savedLevel) document.getElementById('level-select').value = savedLevel;
+            else document.getElementById('level-select').value = '1';
+
+            if (savedClef) document.getElementById('clef-select').value = savedClef;
+            if (savedTimeSig) document.getElementById('timesig-select').value = savedTimeSig;
+            if (savedRhythm) document.getElementById('rhythm-select').value = savedRhythm;
+        }
+
+        // FAVORITOS
         document.getElementById('btn-toggle-favs').addEventListener('click', () => {
             document.getElementById('favorites-sidebar').classList.toggle('open');
         });
@@ -364,6 +477,7 @@
 
         document.getElementById('btn-save-fav').addEventListener('click', saveFavorite);
 
+        // --- SISTEMA DE ATAJOS (SHORTCUTS) COMPLETO ---
         document.addEventListener('keydown', (e) => {
             if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) {
                 if (e.key === 'Escape') {
@@ -394,6 +508,18 @@
                 case 'f':
                     e.preventDefault();
                     if (!document.getElementById('btn-save-fav').disabled) saveFavorite();
+                    break;
+                case 'p':
+                    e.preventDefault();
+                    document.getElementById('btn-fullscreen').click();
+                    break;
+                case 'x':
+                    e.preventDefault();
+                    if (exerciseData.length > 0) exportToMusicXML();
+                    break;
+                case 'j':
+                    e.preventDefault();
+                    if (exerciseData.length > 0) exportToJPEG();
                     break;
                 case 'h':
                 case '?':
@@ -440,12 +566,12 @@
         document.getElementById('cb-degrees').addEventListener('change', () => { if (exerciseData.length > 0) drawScoreResponsive(); });
 
         const keyData = [
-            { name: 'Do Mayor', type: 'maj', root: 60, vfKey: 'C', accidentals: {}, degrees: ['c', 'd', 'e', 'f', 'g', 'a', 'b'] },
-            { name: 'Sol Mayor', type: 'maj', root: 55, vfKey: 'G', accidentals: { f: '#' }, degrees: ['g', 'a', 'b', 'c', 'd', 'e', 'f#'] },
-            { name: 'Fa Mayor', type: 'maj', root: 53, vfKey: 'F', accidentals: { b: 'b' }, degrees: ['f', 'g', 'a', 'bb', 'c', 'd', 'e'] },
-            { name: 'La Menor', type: 'min', root: 57, vfKey: 'Am', accidentals: {}, degrees: ['a', 'b', 'c', 'd', 'e', 'f', 'g#'] },
-            { name: 'Mi Menor', type: 'min', root: 52, vfKey: 'Em', accidentals: { f: '#' }, degrees: ['e', 'f#', 'g', 'a', 'b', 'c', 'd#'] },
-            { name: 'Re Menor', type: 'min', root: 50, vfKey: 'Dm', accidentals: { b: 'b' }, degrees: ['d', 'e', 'f', 'g', 'a', 'bb', 'c#'] }
+            { name: 'Do Mayor', type: 'maj', root: 60, vfKey: 'C', accidentals: {}, degrees: ['c', 'd', 'e', 'f', 'g', 'a', 'b'], fifths: 0 },
+            { name: 'Sol Mayor', type: 'maj', root: 55, vfKey: 'G', accidentals: { f: '#' }, degrees: ['g', 'a', 'b', 'c', 'd', 'e', 'f#'], fifths: 1 },
+            { name: 'Fa Mayor', type: 'maj', root: 53, vfKey: 'F', accidentals: { b: 'b' }, degrees: ['f', 'g', 'a', 'bb', 'c', 'd', 'e'], fifths: -1 },
+            { name: 'La Menor', type: 'min', root: 57, vfKey: 'Am', accidentals: {}, degrees: ['a', 'b', 'c', 'd', 'e', 'f', 'g#'], fifths: 0 },
+            { name: 'Mi Menor', type: 'min', root: 52, vfKey: 'Em', accidentals: { f: '#' }, degrees: ['e', 'f#', 'g', 'a', 'b', 'c', 'd#'], fifths: 1 },
+            { name: 'Re Menor', type: 'min', root: 50, vfKey: 'Dm', accidentals: { b: 'b' }, degrees: ['d', 'e', 'f', 'g', 'a', 'bb', 'c#'], fifths: -1 }
         ];
 
         const CLEF_RANGES = {
@@ -456,7 +582,6 @@
             'bass':    { min: 36, max: 62 }  
         };
 
-        // MATRIZ MÉTRICA DETERMINISTA RECTIFICADA
         const METER_CONFIGS = {
             '2/2': { beats: 2, type: 'simple', beatUnit: 'h', measureUnit: 'w', denom: 2 },
             '3/2': { beats: 3, type: 'simple', beatUnit: 'h', measureUnit: 'w.', denom: 2 },
@@ -473,6 +598,13 @@
             '12/8':{ beats: 4, type: 'compound', beatUnit: 'qd', measureUnit: 'w.', denom: 8 },
             '6/16':{ beats: 2, type: 'compound', beatUnit: '8d', measureUnit: 'qd', denom: 16 },
             '9/16':{ beats: 3, type: 'compound', beatUnit: '8d', measureUnit: 'qd_8d', denom: 16 }
+        };
+
+        const DURATION_SCALER = {
+            2:  { 'h':'w', 'hd':'w.', 'q':'h', 'qd':'h.', '8':'q', '8d':'qd', '16':'8' },
+            4:  { 'h':'h', 'hd':'hd', 'q':'q', 'qd':'qd', '8':'8', '8d':'8d', '16':'16' },
+            8:  { 'h':'q', 'hd':'qd', 'q':'8', 'qd':'8d', '8':'16', '8d':'16d', '16':'32' },
+            16: { 'h':'8', 'hd':'8d', 'q':'16', 'qd':'16d', '8':'32', '8d':'32d', '16':'64' }
         };
 
         const RHYTHMS = {
@@ -492,7 +624,6 @@
             '64': { duration: '64', beats: 0.0625, toneDur: '64n', isDot: false }
         };
 
-        // GENERADOR DE MOTIVOS DINÁMICOS BASADOS EN LA UNIDAD BASE DEL COMPÁS
         function getMotifs(beatUnit, type, complexity) {
             if (type === 'simple') {
                 let div1 = beatUnit === 'h' ? 'q' : (beatUnit === 'q' ? '8' : (beatUnit === '8' ? '16' : '32'));
@@ -637,7 +768,6 @@
                 
                 if (beatsLeft >= 2) {
                     if (complexity === 'basic') {
-                        // Obligar a que la unidad de tiempo exista matemáticamente en complejidad básica
                         if (hasBeatUnit || beatsLeft > 2) fuse = Math.random() > 0.5;
                     } else if (complexity === 'intermediate') {
                         fuse = Math.random() > 0.7;
@@ -675,7 +805,6 @@
                     if (dur === timeSigConfig.beatUnit) hasBeatUnit = true;
                 }
 
-                // Agrupaciones visuales de corchetes solo para figuras que lo requieran lógicamente
                 let hasFlags = motif.some(dur => ['8', '16', '32', '64', '8d', '16d'].includes(dur));
                 if (motif.length > 1 && hasFlags) {
                     beamGroups.push(motifIndices);
@@ -759,46 +888,83 @@
 
             if (levelId <= 10) pool = getValidDiatonicPool(rawPool, levelId, reqType, anchorMidi);
             
-            let isCadenceLevel = levelId >= 7;
+            let isCadenceLevel = levelId === 7 || levelId === 8 || levelId >= 11;
             let measureChords = [];
 
             if (isCadenceLevel) {
                 let prog;
                 if (levelId === 7 || levelId === 8) {
-                    prog = [ ['1','3','5'], ['4','6','1'], ['5','7','2','4'], ['1','3','5'] ];
+                    if (reqType === 'maj') prog = [ ['1','3','5'], ['4','6','1'], ['5','7','2','4'], ['1','3','5'] ];
+                    else prog = [ ['1','b3','5'], ['4','b6','1'], ['5','7','2','4'], ['1','b3','5'] ];
                 } else if (levelId === 11) {
-                    const opts = [
-                        [['1','3','5'], ['7','2','4','5'], ['1','3','5']], 
-                        [['1','3','5'], ['2','4','5','7'], ['1','3','5']], 
-                        [['1','3','5'], ['4','5','7','2'], ['3','5','1']]  
-                    ];
-                    prog = opts[Math.floor(Math.random() * opts.length)];
+                    if (reqType === 'maj') {
+                        const opts = [
+                            [['1','3','5'], ['7','2','4','5'], ['1','3','5']], 
+                            [['1','3','5'], ['2','4','5','7'], ['1','3','5']], 
+                            [['1','3','5'], ['4','5','7','2'], ['3','5','1']]  
+                        ];
+                        prog = opts[Math.floor(Math.random() * opts.length)];
+                    } else {
+                        const opts = [
+                            [['1','b3','5'], ['7','2','4','5'], ['1','b3','5']], 
+                            [['1','b3','5'], ['2','4','5','7'], ['1','b3','5']], 
+                            [['1','b3','5'], ['4','5','7','2'], ['b3','5','1']]  
+                        ];
+                        prog = opts[Math.floor(Math.random() * opts.length)];
+                    }
                 } else if (levelId === 12) {
-                    const seventh = reqType === 'maj' ? '6' : 'b6'; 
-                    prog = [ ['1','3','5'], ['7','2','4', seventh], ['1','3','5'] ];
+                    if (reqType === 'maj') prog = [ ['1','3','5'], ['7','2','4', '6'], ['1','3','5'] ];
+                    else prog = [ ['1','b3','5'], ['7','2','4', 'b6'], ['1','b3','5'] ];
                 } else if (levelId === 13) {
-                    const opts = [
-                        [['1','3','5'], ['6','#1','3','5'], ['2','4','6'], ['5','7','2']], 
-                        [['1','3','5'], ['2','#4','6','1'], ['5','7','2'], ['1','3','5']]  
-                    ];
-                    prog = opts[Math.floor(Math.random() * opts.length)];
+                    if (reqType === 'maj') {
+                        const opts = [
+                            [['1','3','5'], ['6','#1','3','5'], ['2','4','6'], ['5','7','2']], 
+                            [['1','3','5'], ['2','#4','6','1'], ['5','7','2'], ['1','3','5']]  
+                        ];
+                        prog = opts[Math.floor(Math.random() * opts.length)];
+                    } else {
+                        const opts = [
+                            [['1','b3','5'], ['1','3','5','b7'], ['4','b6','1'], ['5','7','2']], 
+                            [['1','b3','5'], ['2','#4','6','1'], ['5','7','2'], ['1','b3','5']]  
+                        ];
+                        prog = opts[Math.floor(Math.random() * opts.length)];
+                    }
                 } else if (levelId === 14) {
-                    const opts = [
-                        [['1','3','5'], ['#4','6','1','b3'], ['5','7','2'], ['1','3','5']], 
-                        [['1','3','5'], ['#5','7','2','4'], ['6','1','3'], ['5','7','2']] 
-                    ];
-                    prog = opts[Math.floor(Math.random() * opts.length)];
+                    if (reqType === 'maj') {
+                        const opts = [
+                            [['1','3','5'], ['#4','6','1','b3'], ['5','7','2'], ['1','3','5']], 
+                            [['1','3','5'], ['#5','7','2','4'], ['6','1','3'], ['5','7','2']] 
+                        ];
+                        prog = opts[Math.floor(Math.random() * opts.length)];
+                    } else {
+                        const opts = [
+                            [['1','b3','5'], ['#4','6','1','b3'], ['5','7','2'], ['1','b3','5']], 
+                            [['1','b3','5'], ['7','2','4','b6'], ['1','b3','5'], ['5','7','2']] 
+                        ];
+                        prog = opts[Math.floor(Math.random() * opts.length)];
+                    }
                 } else if (levelId === 15) {
-                    const opts = [
-                        [['1','3','5'], ['4','b6','b2'], ['5','7','2'], ['1','3','5']], 
-                        [['1','3','5'], ['b6','1','b3','#4'], ['5','1','3'], ['5','7','2']] 
-                    ];
-                    prog = opts[Math.floor(Math.random() * opts.length)];
+                    if (reqType === 'maj') {
+                        const opts = [
+                            [['1','3','5'], ['4','b6','b2'], ['5','7','2'], ['1','3','5']], 
+                            [['1','3','5'], ['b6','1','b3','#4'], ['5','1','3'], ['5','7','2']] 
+                        ];
+                        prog = opts[Math.floor(Math.random() * opts.length)];
+                    } else {
+                        const opts = [
+                            [['1','b3','5'], ['4','b6','b2'], ['5','7','2'], ['1','b3','5']], 
+                            [['1','b3','5'], ['b6','1','b3','#4'], ['5','1','b3'], ['5','7','2']] 
+                        ];
+                        prog = opts[Math.floor(Math.random() * opts.length)];
+                    }
                 }
 
                 for (let i = 0; i < numMeasures; i++) {
-                    if (i === numMeasures - 1) measureChords.push(['1','3','5']); 
-                    else measureChords.push(prog[i % prog.length]);
+                    if (i === numMeasures - 1) {
+                        measureChords.push(reqType === 'maj' ? ['1','3','5'] : ['1','b3','5']); 
+                    } else {
+                        measureChords.push(prog[i % prog.length]);
+                    }
                 }
             }
 
@@ -807,7 +973,7 @@
             let bestExerciseData = [];
 
             let midMeasureIndex = numMeasures > 3 ? Math.floor(numMeasures / 2) - 1 : -1;
-            let beatUnitVal = RHYTHMS[timeSigConfig.beatUnit].beats; // Valor numérico base de la métrica real
+            let beatUnitVal = RHYTHMS[timeSigConfig.beatUnit].beats;
 
             while (!validExercise && attempt < 50) {
                 attempt++;
@@ -861,7 +1027,6 @@
                         const isPenultimateNote = (isLastMeasure && j === totalAttacks - 2);
                         const isMidpointEnd = (i === midMeasureIndex && j === totalAttacks - 1) && (levelId > 2);
 
-                        // IDENTIFICACIÓN MÉTRICA EXACTA BASADA EN LA UNIDAD DEL COMPÁS
                         let isStrongBeat = false;
                         const eps = 0.01;
                         let currentLogicalBeat = currentBeatInMeasure / beatUnitVal;
@@ -951,7 +1116,6 @@
 
                                 let smoothCands = candsWithDist.filter(c => c.dist <= 4);
                                 
-                                // REGLA: Forzar movimiento conjunto solo si la figura rítmica es más pequeña que la unidad de tiempo
                                 let forceConjunct = r.beats < (beatUnitVal * 0.9);
 
                                 if (forceConjunct) {
@@ -1070,6 +1234,9 @@
             if (bestExerciseData.length > 0) {
                 exerciseData = bestExerciseData;
                 document.getElementById('btn-save-fav').disabled = false;
+                
+                // Iniciamos cronómetro si es la primera vez que se interactúa con el motor con éxito
+                startStudyTimer();
             }
         }
 
@@ -1175,6 +1342,182 @@
         window.addEventListener('resize', () => {
             if (exerciseData.length > 0 && !isPlaying) drawScoreResponsive();
         });
+
+        // --- MOTOR DE EXPORTACIÓN JPEG ---
+        async function exportToJPEG() {
+            if (exerciseData.length === 0) return alert("Genera un ejercicio primero.");
+            const svgs = Array.from(document.querySelectorAll('#score-container svg'));
+            if (svgs.length === 0) return;
+
+            const btn = document.querySelector('[title="Descargar Imagen JPEG [J]"]');
+            const originalText = btn.innerText;
+            btn.innerText = 'Renderizando...';
+            btn.disabled = true;
+
+            try {
+                let totalHeight = 0;
+                let maxWidth = 0;
+                const svgData = svgs.map(svg => {
+                    const rect = svg.getBoundingClientRect();
+                    totalHeight += rect.height;
+                    if (rect.width > maxWidth) maxWidth = rect.width;
+                    return { html: new XMLSerializer().serializeToString(svg), width: rect.width, height: rect.height };
+                });
+
+                const canvas = document.createElement('canvas');
+                canvas.width = maxWidth + 40; 
+                canvas.height = totalHeight + (svgs.length * 20) + 40;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                let currentY = 20;
+                for (const data of svgData) {
+                    const img = new Image();
+                    const svgBlob = new Blob([data.html], {type: 'image/svg+xml;charset=utf-8'});
+                    const url = URL.createObjectURL(svgBlob);
+                    
+                    await new Promise((resolve, reject) => {
+                        img.onload = () => {
+                            const offsetX = (canvas.width - data.width) / 2;
+                            ctx.drawImage(img, offsetX, currentY);
+                            currentY += data.height + 20;
+                            URL.revokeObjectURL(url);
+                            resolve();
+                        };
+                        img.onerror = reject;
+                        img.src = url;
+                    });
+                }
+
+                const link = document.createElement('a');
+                link.download = `Arte_del_Solfeo_${currentKeyInfo.name.replace(' ', '_')}_${Date.now()}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 1.0);
+                link.click();
+            } catch (err) {
+                console.error("Error exportando JPEG:", err);
+                alert("Ocurrió un error al generar la imagen.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // --- MOTOR SERIALIZADOR DE MUSICXML ---
+        function exportToMusicXML() {
+            if (exerciseData.length === 0) return alert("Genera un ejercicio primero.");
+
+            const durationMap = {
+                'w': { type: 'whole', div: 16 },
+                'w.': { type: 'whole', div: 24, dot: true },
+                'h': { type: 'half', div: 8 },
+                'hd': { type: 'half', div: 12, dot: true },
+                'h.': { type: 'half', div: 12, dot: true },
+                'q': { type: 'quarter', div: 4 },
+                'qd': { type: 'quarter', div: 6, dot: true },
+                '8': { type: 'eighth', div: 2 },
+                '8d': { type: 'eighth', div: 3, dot: true },
+                '16': { type: '16th', div: 1 },
+                '16d': { type: '16th', div: 1.5, dot: true },
+                '32': { type: '32nd', div: 0.5 },
+                '64': { type: '64th', div: 0.25 }
+            };
+
+            const ts = selectedTimeSig.split('/');
+            const beats = ts[0];
+            const beatType = ts[1];
+            
+            const getAlter = (acc) => {
+                if (acc === '#') return '1';
+                if (acc === '##') return '2';
+                if (acc === 'b') return '-1';
+                if (acc === 'bb') return '-2';
+                return '0';
+            };
+
+            let xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+  <work>
+    <work-title>Arte del Solfeo Ejercicio</work-title>
+  </work>
+  <part-list>
+    <score-part id="P1">
+      <part-name>Voz</part-name>
+    </score-part>
+  </part-list>
+  <part id="P1">`;
+
+            exerciseData.forEach((measure, idx) => {
+                xml += `\n    <measure number="${idx + 1}">`;
+                
+                if (idx === 0) {
+                    let clefSign = 'G', clefLine = '2';
+                    if (selectedClef === 'bass') { clefSign = 'F'; clefLine = '4'; }
+                    else if (selectedClef === 'alto') { clefSign = 'C'; clefLine = '3'; }
+                    else if (selectedClef === 'tenor') { clefSign = 'C'; clefLine = '4'; }
+                    else if (selectedClef === 'soprano') { clefSign = 'C'; clefLine = '1'; }
+
+                    xml += `
+      <attributes>
+        <divisions>4</divisions>
+        <key>
+          <fifths>${currentKeyInfo.fifths || 0}</fifths>
+          <mode>${currentKeyInfo.type === 'min' ? 'minor' : 'major'}</mode>
+        </key>
+        <time>
+          <beats>${beats}</beats>
+          <beat-type>${beatType}</beat-type>
+        </time>
+        <clef>
+          <sign>${clefSign}</sign>
+          <line>${clefLine}</line>
+        </clef>
+      </attributes>`;
+                }
+
+                measure.notes.forEach(n => {
+                    const step = n.pitchInfo.noteName.charAt(0).toUpperCase();
+                    const acc = n.pitchInfo.noteName.substring(1);
+                    const alter = getAlter(acc);
+                    const oct = n.pitchInfo.octave;
+                    const durInfo = durationMap[n.rhythm.duration] || { type: 'quarter', div: 4 };
+
+                    xml += `
+      <note>
+        <pitch>
+          <step>${step}</step>`;
+                    if (alter !== '0') xml += `\n          <alter>${alter}</alter>`;
+                    xml += `\n          <octave>${oct}</octave>
+        </pitch>
+        <duration>${durInfo.div}</duration>
+        <type>${durInfo.type}</type>`;
+                    if (durInfo.dot) xml += `\n        <dot/>`;
+                    if (alter !== '0' && acc !== '') {
+                        let xmlAcc = 'natural';
+                        if(acc==='#') xmlAcc = 'sharp';
+                        if(acc==='b') xmlAcc = 'flat';
+                        xml += `\n        <accidental>${xmlAcc}</accidental>`;
+                    }
+                    xml += `\n      </note>`;
+                });
+                
+                if (idx === exerciseData.length - 1) {
+                    xml += `\n      <barline location="right"><bar-style>light-heavy</bar-style></barline>`;
+                }
+                
+                xml += `\n    </measure>`;
+            });
+
+            xml += `\n  </part>\n</score-partwise>`;
+
+            const blob = new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Arte_del_Solfeo_${currentKeyInfo.name.replace(' ', '_')}_${Date.now()}.musicxml`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
 
         function highlightNoteAndScroll(index) {
             const allNotes = document.querySelectorAll('.vf-stavenote');
@@ -1311,8 +1654,14 @@
 
             if (melodyPart) melodyPart.dispose();
             melodyPart = new Tone.Part((time, value) => {
-                if (value.idx === -1) Tone.Draw.schedule(() => { stopPlayback(); }, time);
-                else {
+                if (value.idx === -1) {
+                    Tone.Draw.schedule(() => { 
+                        stopPlayback(); 
+                        // TELEMETRÍA: Incrementar contador al finalizar un ejercicio practicado
+                        exercisesPracticed++;
+                        document.getElementById('session-counter').innerText = exercisesPracticed;
+                    }, time);
+                } else {
                     synth.triggerAttackRelease(value.pitch, value.dur, time);
                     Tone.Draw.schedule(() => { highlightNoteAndScroll(value.idx); }, time);
                 }
@@ -1321,11 +1670,16 @@
             Tone.Transport.stop(); Tone.Transport.position = 0; Tone.Transport.start();
         }
 
+        // --- MANEJADORES DE EVENTOS DE INTERFAZ ---
+
         document.getElementById('btn-generate').addEventListener('click', () => {
             const levelId = parseInt(document.getElementById('level-select').value);
             const rhythmComplexity = document.getElementById('rhythm-select').value;
             const measures = parseInt(document.getElementById('measures-input').value) || 8;
             document.getElementById('measures-input').value = Math.min(Math.max(measures, 4), 32);
+
+            // Guardar configuración antes de generar
+            saveConfigToStorage();
 
             generateExercise(document.getElementById('measures-input').value, levelId, rhythmComplexity);
             
@@ -1343,7 +1697,17 @@
             else playMelody();
         });
 
-        document.getElementById('btn-generate').click();
+        // Eventos de auto-generación (Recomendado no usarlos, pero exigidos por el usuario)
+        document.getElementById('level-select').addEventListener('change', () => document.getElementById('btn-generate').click());
+        document.getElementById('clef-select').addEventListener('change', () => document.getElementById('btn-generate').click());
+        document.getElementById('timesig-select').addEventListener('change', () => document.getElementById('btn-generate').click());
+        document.getElementById('rhythm-select').addEventListener('change', () => document.getElementById('btn-generate').click());
+
+        // INICIALIZACIÓN
+        window.onload = () => {
+            loadConfigFromStorage();
+            document.getElementById('btn-generate').click();
+        };
 
     </script>
 </body>
