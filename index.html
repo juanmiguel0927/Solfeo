@@ -187,6 +187,7 @@
                         <input type="range" id="tempo-slider" min="40" max="160" value="80" class="block w-full mt-2 accent-red-600">
                     </div>
 
+                    <!-- Fila de Mixers de Audio -->
                     <div class="lg:col-span-4 mt-2 p-3 md:p-4 bg-slate-100 border border-slate-200 rounded-md grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 items-center">
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Melodía</label>
@@ -197,19 +198,26 @@
                             <input type="range" id="vol-metro" min="-40" max="5" value="-10" class="block w-full accent-slate-800">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Cadencia</label>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Acordes</label>
                             <input type="range" id="vol-cadence" min="-40" max="5" value="-8" class="block w-full accent-slate-800">
                         </div>
-                        <div class="flex items-center space-x-2 pt-4 md:pt-0">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Bajo</label>
+                            <input type="range" id="vol-bass" min="-40" max="5" value="-2" class="block w-full accent-slate-800">
+                        </div>
+                    </div>
+
+                    <!-- Fila de Switches y Anotaciones -->
+                    <div class="lg:col-span-4 mt-2 p-3 bg-slate-50 border border-slate-200 rounded-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div class="flex flex-wrap gap-4 items-center">
                             <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold text-slate-700 cursor-pointer">
                                 <input type="checkbox" id="cb-metro-cont" class="rounded border-slate-300 text-red-600 focus:ring-red-500">
                                 <span>Metrónomo Continuo</span>
                             </label>
-                        </div>
-                    </div>
-
-                    <div class="lg:col-span-4 mt-2 p-2 md:p-3 bg-slate-50 border border-slate-200 rounded-md flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-                        <div class="flex flex-wrap items-center gap-4">
+                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="cb-bass" checked class="rounded border-slate-300 text-red-600 focus:ring-red-500">
+                                <span>Bajo Implícito</span>
+                            </label>
                             <div class="flex items-center space-x-2">
                                 <label class="text-xs md:text-sm font-semibold text-slate-700">Anotaciones:</label>
                                 <select id="notename-select" class="rounded border-slate-300 text-slate-700 focus:ring-red-500 text-xs md:text-sm p-1 md:p-1.5 bg-white">
@@ -222,6 +230,12 @@
                                 <input type="checkbox" id="cb-degrees" class="rounded border-slate-300 text-red-600 focus:ring-red-500">
                                 <span>Mostrar Grados</span>
                             </label>
+                        </div>
+                        
+                        <!-- Crutch Visual del Bajo -->
+                        <div class="flex-shrink-0 bg-white border border-slate-300 px-3 py-1.5 rounded-md shadow-sm flex items-center gap-2" title="Advertencia: Leer la nota en lugar de escucharla arruina el propósito del entrenamiento auditivo.">
+                            <span class="text-xs md:text-sm font-bold text-slate-700 uppercase tracking-wide">Bajo Actual:</span>
+                            <span id="bass-note-display" class="font-mono text-sm md:text-base font-bold text-red-600 w-8 text-center">--</span>
                         </div>
                     </div>
                     
@@ -302,7 +316,7 @@
                         </div>
                         <div class="bg-red-50 p-3 rounded border border-red-200">
                             <h4 class="font-bold text-red-900 mb-1">Armonía Cromática Avanzada (Motor Voice Leading)</h4>
-                            <p class="text-red-800 text-xs mb-2"><em>Las reglas de contrapunto pre-tonal se desconectan. La matriz se resuelve por conducción de voces parsimoniosa (Voice Leading).</em></p>
+                            <p class="text-red-800 text-xs mb-2"><em>Las reglas de contrapunto pre-tonal se desconectan. La matriz se resuelve por conducción de voces parsimoniosa (Voice Leading) y filtro estricto anti-quintas/octavas paralelas respecto al bajo.</em></p>
                             <ul class="list-disc pl-5 space-y-1 text-red-900">
                                 <li><strong>Nivel 11:</strong> V7 e Inversiones.</li>
                                 <li><strong>Nivel 12:</strong> Séptima Disminuida (vii°7).</li>
@@ -349,6 +363,7 @@
         let metronomeSynth = null; 
         let melodyPart = null;
         let metronomePart = null;  
+        let bassPart = null; 
         let isPlaying = false;
         let currentKeyInfo = null;
         let baseRootMidi = null;
@@ -546,7 +561,12 @@
         document.getElementById('vol-cadence').addEventListener('input', (e) => {
             const vol = e.target.value <= -40 ? -Infinity : Number(e.target.value);
             if (cadencePianoSynth) cadencePianoSynth.volume.value = vol;
-            if (cadenceBassSynth) cadenceBassSynth.volume.value = vol + 6; 
+        });
+        
+        // Fader independiente para el Bajo
+        document.getElementById('vol-bass').addEventListener('input', (e) => {
+            const vol = e.target.value <= -40 ? -Infinity : Number(e.target.value);
+            if (cadenceBassSynth) cadenceBassSynth.volume.value = vol;
         });
 
         document.getElementById('notename-select').addEventListener('change', () => { if (exerciseData.length > 0) drawScoreResponsive(); });
@@ -739,14 +759,12 @@
         function generateRhythmsForMeasure(complexity, isStructuralEnd, timeSigConfig) {
             if (isStructuralEnd) {
                 if (timeSigConfig.measureUnit.includes('_')) {
-                    return { rhythms: timeSigConfig.measureUnit.split('_').map(p => RHYTHMS[p]), beamGroups: [] };
+                    return { rhythms: timeSigConfig.measureUnit.split('_').map(p => RHYTHMS[p]) };
                 }
-                return { rhythms: [RHYTHMS[timeSigConfig.measureUnit]], beamGroups: [] };
+                return { rhythms: [RHYTHMS[timeSigConfig.measureUnit]] };
             }
 
             let rhythms = [];
-            let beamGroups = [];
-            let currentNoteIndex = 0;
             let beatsLeft = timeSigConfig.beats;
             let hasBeatUnit = false;
 
@@ -776,7 +794,6 @@
 
                     if (fusedDur && RHYTHMS[fusedDur]) {
                         rhythms.push(RHYTHMS[fusedDur]);
-                        currentNoteIndex++;
                         beatsLeft -= 2;
                         continue;
                     }
@@ -785,25 +802,17 @@
                 let beatMotifs = getMotifs(timeSigConfig.beatUnit, timeSigConfig.type, complexity);
                 let motif = beatMotifs[Math.floor(Math.random() * beatMotifs.length)];
 
-                let motifIndices = [];
                 for (let dur of motif) {
                     rhythms.push(RHYTHMS[dur]);
-                    motifIndices.push(currentNoteIndex++);
                     if (dur === timeSigConfig.beatUnit) hasBeatUnit = true;
-                }
-
-                let hasFlags = motif.some(dur => ['8', '16', '32', '64', '8d', '16d'].includes(dur));
-                if (motif.length > 1 && hasFlags) {
-                    beamGroups.push(motifIndices);
                 }
 
                 beatsLeft -= 1;
             }
 
-            return { rhythms, beamGroups };
+            return { rhythms };
         }
 
-        // Utilidad para barajar candidatos (Fisher-Yates) para el motor CSP
         function shuffle(array) {
             let currentIndex = array.length, randomIndex;
             while (currentIndex !== 0) {
@@ -882,6 +891,7 @@
             
             let isCadenceLevel = levelId === 7 || levelId === 8 || levelId >= 11;
             let measureChords = [];
+            let measureBassMidi = []; 
 
             if (isCadenceLevel) {
                 let prog;
@@ -952,10 +962,17 @@
                 }
 
                 for (let i = 0; i < numMeasures; i++) {
-                    if (i === numMeasures - 1) {
-                        measureChords.push(reqType === 'maj' ? ['1','3','5'] : ['1','b3','5']); 
+                    let chordLabels = (i === numMeasures - 1) ? (reqType === 'maj' ? ['1','3','5'] : ['1','b3','5']) : prog[i % prog.length];
+                    measureChords.push(chordLabels);
+                    
+                    let rootLabel = chordLabels[0];
+                    let rootCand = rawPool.find(n => n.label === rootLabel);
+                    if (rootCand) {
+                        let bMidi = (rootCand.midi % 12) + 36;
+                        if (bMidi < 40) bMidi += 12; 
+                        measureBassMidi.push(bMidi);
                     } else {
-                        measureChords.push(prog[i % prog.length]);
+                        measureBassMidi.push(null);
                     }
                 }
             }
@@ -966,7 +983,6 @@
             let validExercise = false;
             let macroAttempt = 0;
 
-            // FASE 2: MOTOR DE BACKTRACKING (Elimina el desbordamiento por Rejection Sampling)
             while (!validExercise && macroAttempt < 5) {
                 macroAttempt++;
                 
@@ -996,9 +1012,8 @@
                     transposeStep2 = transposeStep1 * -1; 
                 }
 
-                // Aplanamos la estructura rítmica en eventos para el Backtracking
                 for (let i = 0; i < numMeasures; i++) {
-                    let measureChordsLabels = isCadenceLevel ? (i === numMeasures - 1 ? (reqType === 'maj' ? ['1','3','5'] : ['1','b3','5']) : measureChords[i]) : null;
+                    let measureChordsLabels = isCadenceLevel ? measureChords[i] : null;
                     let currentBeatInMeasure = 0;
                     let tStep = i === 1 ? transposeStep1 : transposeStep2;
 
@@ -1050,6 +1065,10 @@
                     if (!candidateStacks[currentIndex]) {
                         let candidates = [];
                         let prevPitch = currentIndex > 0 ? path[currentIndex - 1] : null;
+                        
+                        let currentBassMidi = isCadenceLevel ? measureBassMidi[ev.measureIdx] : null;
+                        let prevEv = currentIndex > 0 ? events[currentIndex - 1] : null;
+                        let prevBassMidi = prevEv && isCadenceLevel ? measureBassMidi[prevEv.measureIdx] : null;
 
                         if (ev.isVeryLastNote) {
                             let tonics = rawPool.filter(n => n.label === '1');
@@ -1070,9 +1089,12 @@
                             let domCands = rawPool.filter(n => ['5','2','7'].includes(n.label));
                             candidates = sortByProximity(domCands, prevPitch.midi);
                         } else if (ev.isSequenceMeasure && path[currentIndex - ev.sourceOffset]) {
+                            
                             let srcPitch = path[currentIndex - ev.sourceOffset];
+
                             if (levelId >= 11) {
                                 let cands = rawPool.filter(n => ev.chord.includes(n.label));
+                                
                                 if (ev.noteIdx === 0) {
                                     let approxMidi = srcPitch.midi + (ev.tStep > 0 ? 2 : -2);
                                     candidates = sortByProximity(cands, approxMidi);
@@ -1088,15 +1110,19 @@
                             } else {
                                 let targetStep = (srcPitch.step + ev.tStep) % 7;
                                 if (targetStep < 0) targetStep += 7;
+
                                 let cands = pool.filter(n => n.step === targetStep);
+                                
                                 if (levelId === 1 || levelId === 2) {
                                     cands = cands.filter(n => ['1','2','3','b3'].includes(n.label));
                                     if (cands.length === 0) cands = pool; 
                                 }
+
                                 let approxMidi = srcPitch.midi + (ev.tStep > 0 ? 2 : -2);
                                 candidates = sortByProximity(cands, approxMidi);
                                 if (candidates.length === 0) candidates = [srcPitch];
                             }
+
                         } else {
                             let cands = pool;
                             if (isCadenceLevel) cands = rawPool.filter(n => ev.chord.includes(n.label));
@@ -1113,7 +1139,6 @@
 
                                 let finalPool = smoothCands.length > 0 ? smoothCands : (candsWithDist.length > 0 ? candsWithDist : cands);
 
-                                // Ajuste de Gravedad
                                 if (prevPitch.midi >= 74) {
                                     let lower = finalPool.filter(c => c.midi < prevPitch.midi);
                                     if (lower.length > 0) finalPool = lower;
@@ -1181,11 +1206,24 @@
                                 }
                             }
                         }
-                        
-                        if (candidates.length === 0 && prevPitch) candidates = [prevPitch];
 
-                        // --- FASE 3: MOTOR DE LOOKAHEAD (Visión Anticipada de 1 Paso) ---
-                        // Poda los candidatos que conducen a callejones sin salida inmediatos.
+                        if (isCadenceLevel && candidates.length > 1) {
+                            candidates = candidates.filter(cand => {
+                                if (prevPitch && currentBassMidi && prevBassMidi && currentBassMidi !== prevBassMidi && prevPitch.midi !== cand.midi) {
+                                    let bassDir = Math.sign(currentBassMidi - prevBassMidi);
+                                    let melDir = Math.sign(cand.midi - prevPitch.midi);
+                                    
+                                    if (bassDir === melDir) {
+                                        let interval = Math.abs(cand.midi - currentBassMidi) % 12;
+                                        if (interval === 0 || interval === 7) return false; 
+                                    }
+                                }
+                                return true;
+                            });
+                        }
+                        
+                        if (candidates.length === 0 && prevPitch) candidates = [prevPitch]; 
+
                         if (currentIndex < events.length - 1 && candidates.length > 1) {
                             let nextEv = events[currentIndex + 1];
                             let nextCands = pool;
@@ -1195,17 +1233,13 @@
 
                             let survivingCandidates = candidates.filter(cand => {
                                 if (levelId >= 11) {
-                                    // En cromatismo, exigimos que la siguiente nota exigida por el acorde esté a máximo una 5ta (7 semitonos)
-                                    // para evitar que el Voice Leading se asfixie en los extremos de la tesitura.
                                     return nextCands.some(nCand => Math.abs(nCand.midi - cand.midi) <= 7);
                                 } else {
-                                    // En diatonismo, simulamos el futuro: verificamos si las reglas de salto sobrevivirían al siguiente paso.
                                     let mockRules = applyMelodicRules(nextCands, [...path, cand], rawPool, levelId);
                                     return (mockRules.steps.length > 0 || mockRules.jumps.length > 0);
                                 }
                             });
                             
-                            // Si la poda es demasiado agresiva y elimina todo, restauramos la lista original (Fallback al Backtracking crudo)
                             if (survivingCandidates.length > 0) {
                                 candidates = survivingCandidates;
                             }
@@ -1221,7 +1255,6 @@
                         path.push(chosen);
                         currentIndex++;
                     } else {
-                        // BACKTRACKING: Si el algoritmo se traba, retrocedemos en lugar de borrar todo
                         candidateStacks[currentIndex] = null;
                         path.pop();
                         currentIndex--;
@@ -1237,7 +1270,6 @@
                         else if (p.midi === maxMidiInExercise) { maxMidiCount++; }
                     }
 
-                    // Aceptamos el ejercicio si tiene clímax único o si el CSP ya gastó muchos intentos
                     if (maxMidiCount <= 2 || macroAttempt >= 4) {
                         validExercise = true;
                         exerciseData = [];
@@ -1247,14 +1279,14 @@
                             for (let j = 0; j < exerciseRhythms[i].rhythms.length; j++) {
                                 measureNotes.push({ rhythm: exerciseRhythms[i].rhythms[j], pitchInfo: path[pathIdx++] });
                             }
-                            exerciseData.push({ notes: measureNotes, beamGroups: exerciseRhythms[i].beamGroups });
+                            exerciseData.push({ notes: measureNotes, bass: isCadenceLevel ? measureBassMidi[i] : null });
                         }
                     }
                 }
             }
 
             if (!validExercise) {
-                document.getElementById('status-display').innerHTML = `<span class="text-red-600 font-bold">Error del Motor: Resolutor CSP falló. Imposible crear una melodía coherente con esas restricciones.</span>`;
+                document.getElementById('status-display').innerHTML = `<span class="text-red-600 font-bold">Error del Motor: Resolutor CSP falló al eludir saltos rotos o quintas paralelas.</span>`;
             } else {
                 document.getElementById('btn-save-fav').disabled = false;
                 startStudyTimer();
@@ -1269,6 +1301,7 @@
 
             const notenameFormat = document.getElementById('notename-select').value;
             const showDegrees = document.getElementById('cb-degrees').checked;
+            const timeSigConfig = METER_CONFIGS[selectedTimeSig];
 
             const wWidth = window.innerWidth;
             let measuresPerLine = 4;
@@ -1290,7 +1323,6 @@
 
                 const measuresInThisLine = Math.min(measuresPerLine, totalMeasures - (l * measuresPerLine));
                 
-                // Cálculo matemático determinista del ancho real del SVG para evitar recortes
                 let lineTotalWidth = 20; 
                 for (let m = 0; m < measuresInThisLine; m++) {
                     lineTotalWidth += staveWidth + (m === 0 && l === 0 ? 50 : 0);
@@ -1351,7 +1383,13 @@
                         return note;
                     });
 
-                    const vfBeams = measure.beamGroups.map(groupIndices => new VF.Beam(groupIndices.map(idx => vexNotes[idx])));
+                    let beamGrouping = [];
+                    if (timeSigConfig.type === 'compound') {
+                        beamGrouping = [new VF.Fraction(3, 8)];
+                    } else {
+                        beamGrouping = [new VF.Fraction(1, timeSigConfig.denom)]; 
+                    }
+                    const vfBeams = VF.Beam.generateBeams(vexNotes, { groups: beamGrouping });
 
                     const voice = new VF.Voice({ num_beats: METER_CONFIGS[selectedTimeSig].beats, beat_value: METER_CONFIGS[selectedTimeSig].type === 'simple' ? 4 : 8 });
                     voice.setStrict(false).addTickables(vexNotes);
@@ -1385,14 +1423,12 @@
                 let totalHeight = 0;
                 let maxWidth = 0;
                 const svgData = svgs.map(svg => {
-                    // Extraemos los atributos matemáticos puros, ignorando la deformación de la pantalla
                     const w = parseFloat(svg.getAttribute('width')) || svg.clientWidth;
                     const h = parseFloat(svg.getAttribute('height')) || svg.clientHeight;
                     totalHeight += h;
                     if (w > maxWidth) maxWidth = w;
                     
                     let htmlStr = new XMLSerializer().serializeToString(svg);
-                    // Forzar especificaciones SVG para el blob si no están presentes
                     if (!htmlStr.match(/^<svg[^>]* width="/)) {
                         htmlStr = htmlStr.replace('<svg', `<svg width="${w}" height="${h}"`);
                     }
@@ -1570,7 +1606,10 @@
             Tone.Transport.position = 0;
             if (melodyPart) { melodyPart.dispose(); melodyPart = null; }
             if (metronomePart) { metronomePart.dispose(); metronomePart = null; }
+            if (bassPart) { bassPart.dispose(); bassPart = null; } 
+            
             document.querySelectorAll('.vf-stavenote').forEach(el => el.classList.remove('vf-note-highlighted'));
+            document.getElementById('bass-note-display').innerText = '--'; // Reseteo visual del Bajo
             
             const btn = document.getElementById('btn-play');
             btn.disabled = false;
@@ -1591,11 +1630,15 @@
             const volMelody = document.getElementById('vol-melody').value;
             const volMetro = document.getElementById('vol-metro').value;
             const volCadence = document.getElementById('vol-cadence').value;
+            const volBass = document.getElementById('vol-bass').value; // Nueva captura
             
             synth.volume.value = volMelody <= -40 ? -Infinity : volMelody;
             metronomeSynth.volume.value = volMetro <= -40 ? -Infinity : volMetro;
             cadencePianoSynth.volume.value = volCadence <= -40 ? -Infinity : volCadence;
-            cadenceBassSynth.volume.value = volCadence <= -40 ? -Infinity : Number(volCadence) + 6;
+            
+            // Si el bajo implícito está apagado, forzamos volumen a -Infinity
+            const isBassActive = document.getElementById('cb-bass').checked;
+            cadenceBassSynth.volume.value = (!isBassActive || volBass <= -40) ? -Infinity : volBass;
             
             isPlaying = true;
             
@@ -1644,6 +1687,7 @@
 
                 sequence.forEach((chord, idx) => {
                     Tone.Transport.schedule((t) => {
+                        // El bajo inicial de la cadencia sí suena siempre para establecer la tonalidad
                         cadenceBassSynth.triggerAttackRelease(chord.bass, "2n", t);
                         cadencePianoSynth.triggerAttackRelease(chord.upper, "2n", t);
                     }, idx * (beatDuration * 2)); 
@@ -1654,10 +1698,34 @@
             }
 
             let events = [];
+            let bassEvents = []; 
             let currentTimeInBeats = 0;
             let globalIndex = 0;
+            const notenameFormat = document.getElementById('notename-select').value;
 
             exerciseData.forEach((measure) => {
+                
+                if (measure.bass) {
+                    let timeInSeconds = currentTimeInBeats * beatDuration;
+                    let bassToneObj = Tone.Frequency(measure.bass, "midi");
+                    let bassTone = bassToneObj.toNote();
+                    let measureDurInBeats = measure.notes.reduce((sum, n) => sum + n.rhythm.beats, 0);
+                    
+                    // Cálculo de Nomenclatura para el Display
+                    let noteLetter = bassTone.charAt(0).toLowerCase();
+                    let acc = bassTone.includes('#') ? '#' : (bassTone.includes('b') ? 'b' : '');
+                    let displayStr = '';
+                    if (notenameFormat === 'anglo') displayStr = noteLetter.toUpperCase() + acc;
+                    else displayStr = LATIN_NAMES[noteLetter] + (acc === 'b' ? 'b' : (acc === '#' ? '#' : ''));
+
+                    bassEvents.push({ 
+                        time: timeInSeconds, 
+                        pitch: bassTone, 
+                        dur: measureDurInBeats * beatDuration,
+                        display: displayStr 
+                    });
+                }
+
                 measure.notes.forEach((note) => {
                     const timeInSeconds = currentTimeInBeats * beatDuration;
                     events.push({ time: timeInSeconds, pitch: note.pitchInfo.tone, dur: note.rhythm.toneDur, idx: globalIndex });
@@ -1686,6 +1754,16 @@
             metronomePart = new Tone.Part((time, value) => {
                 metronomeSynth.triggerAttackRelease(value.isDownbeat ? "C4" : "C3", "8n", time); 
             }, metroEvents).start(0);
+
+            if (bassPart) bassPart.dispose();
+            if (bassEvents.length > 0 && isBassActive) {
+                bassPart = new Tone.Part((time, value) => {
+                    cadenceBassSynth.triggerAttackRelease(value.pitch, value.dur, time);
+                    Tone.Draw.schedule(() => {
+                        document.getElementById('bass-note-display').innerText = value.display;
+                    }, time);
+                }, bassEvents).start(timeOffsetInSeconds);
+            }
 
             if (melodyPart) melodyPart.dispose();
             melodyPart = new Tone.Part((time, value) => {
