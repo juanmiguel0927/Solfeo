@@ -49,6 +49,12 @@
             transform: translateX(100%);
         }
         #favorites-sidebar.open { transform: translateX(0); }
+        
+        /* Scrollbar personalizada para el Modal */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="p-2 md:p-6 lg:p-8 flex flex-col min-h-screen">
@@ -59,7 +65,7 @@
             <p class="text-sm md:text-base text-slate-600">Entrena tu oído. Mejora tu lectura. Potencia tu música.</p>
         </div>
         
-        <!-- Panel de Telemetría (Modo Estudio) -->
+        <!-- Panel de Telemetría -->
         <div class="bg-slate-800 text-slate-100 rounded-md px-4 py-2 flex gap-6 items-center shadow-inner text-sm md:text-base font-mono w-full md:w-auto justify-center">
             <div class="flex items-center gap-2" title="Tiempo de sesión activa">
                 <span class="text-slate-400">⏱</span>
@@ -94,7 +100,7 @@
     <main class="flex-grow flex gap-6 max-w-7xl mx-auto w-full relative overflow-hidden">
         
         <!-- MAIN CONTROLS -->
-        <div class="flex-grow space-y-6 w-full">
+        <div class="flex-grow space-y-4 md:space-y-6 w-full">
             <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-200">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <div class="lg:col-span-2">
@@ -218,6 +224,13 @@
                                 <input type="checkbox" id="cb-bass" checked class="rounded border-slate-300 text-red-600 focus:ring-red-500">
                                 <span>Bajo Implícito</span>
                             </label>
+                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="cb-chords" checked class="rounded border-slate-300 text-red-600 focus:ring-red-500">
+                                <span>Acordes (L11+)</span>
+                            </label>
+                            
+                            <div class="w-px h-4 bg-slate-300 mx-2 hidden md:block"></div>
+
                             <div class="flex items-center space-x-2">
                                 <label class="text-xs md:text-sm font-semibold text-slate-700">Anotaciones:</label>
                                 <select id="notename-select" class="rounded border-slate-300 text-slate-700 focus:ring-red-500 text-xs md:text-sm p-1 md:p-1.5 bg-white">
@@ -232,10 +245,10 @@
                             </label>
                         </div>
                         
-                        <!-- Crutch Visual del Bajo -->
-                        <div class="flex-shrink-0 bg-white border border-slate-300 px-3 py-1.5 rounded-md shadow-sm flex items-center gap-2" title="Advertencia: Leer la nota en lugar de escucharla arruina el propósito del entrenamiento auditivo.">
-                            <span class="text-xs md:text-sm font-bold text-slate-700 uppercase tracking-wide">Bajo Actual:</span>
-                            <span id="bass-note-display" class="font-mono text-sm md:text-base font-bold text-red-600 w-8 text-center">--</span>
+                        <!-- Crutch Visual del Acorde -->
+                        <div class="flex-shrink-0 bg-white border border-slate-300 px-3 py-1.5 rounded-md shadow-sm flex items-center justify-center gap-2 w-full md:w-auto mt-2 md:mt-0" title="Lectura digital (Solo se activa durante la reproducción)">
+                            <span class="text-xs md:text-sm font-bold text-slate-700 uppercase tracking-wide">Acorde:</span>
+                            <span id="bass-note-display" class="font-mono text-sm md:text-base font-bold text-red-600 min-w-[3rem] text-center inline-block">--</span>
                         </div>
                     </div>
                     
@@ -257,7 +270,7 @@
 
             <div class="w-full mt-6" id="fullscreen-target">
                 <div id="score-container">
-                    <div class="text-slate-400 italic text-center py-12 w-full text-base md:text-lg">Iniciando Motor Analítico...</div>
+                    <div class="text-slate-400 italic text-center py-12 w-full text-base md:text-lg">Iniciando Motor Analítico CSP...</div>
                 </div>
             </div>
         </div>
@@ -316,7 +329,7 @@
                         </div>
                         <div class="bg-red-50 p-3 rounded border border-red-200">
                             <h4 class="font-bold text-red-900 mb-1">Armonía Cromática Avanzada (Motor Voice Leading)</h4>
-                            <p class="text-red-800 text-xs mb-2"><em>Las reglas de contrapunto pre-tonal se desconectan. La matriz se resuelve por conducción de voces parsimoniosa (Voice Leading) y filtro estricto anti-quintas/octavas paralelas respecto al bajo.</em></p>
+                            <p class="text-red-800 text-xs mb-2"><em>Las reglas de contrapunto pre-tonal se desconectan. La matriz se resuelve por conducción de voces parsimoniosa (Voice Leading) y filtro estricto anti-quintas/octavas paralelas respecto al bajo implícito. A partir del Nivel 11, la armonía (acordes completos) sonará durante el ejercicio para facilitar la afinación cromática.</em></p>
                             <ul class="list-disc pl-5 space-y-1 text-red-900">
                                 <li><strong>Nivel 11:</strong> V7 e Inversiones.</li>
                                 <li><strong>Nivel 12:</strong> Séptima Disminuida (vii°7).</li>
@@ -364,6 +377,7 @@
         let melodyPart = null;
         let metronomePart = null;  
         let bassPart = null; 
+        let chordPart = null; 
         let isPlaying = false;
         let currentKeyInfo = null;
         let baseRootMidi = null;
@@ -558,12 +572,12 @@
         });
         document.getElementById('vol-melody').addEventListener('input', (e) => { if (synth) synth.volume.value = e.target.value <= -40 ? -Infinity : e.target.value; });
         document.getElementById('vol-metro').addEventListener('input', (e) => { if (metronomeSynth) metronomeSynth.volume.value = e.target.value <= -40 ? -Infinity : e.target.value; });
+        
         document.getElementById('vol-cadence').addEventListener('input', (e) => {
             const vol = e.target.value <= -40 ? -Infinity : Number(e.target.value);
             if (cadencePianoSynth) cadencePianoSynth.volume.value = vol;
         });
         
-        // Fader independiente para el Bajo
         document.getElementById('vol-bass').addEventListener('input', (e) => {
             const vol = e.target.value <= -40 ? -Infinity : Number(e.target.value);
             if (cadenceBassSynth) cadenceBassSynth.volume.value = vol;
@@ -859,6 +873,8 @@
         let selectedClef = 'treble';
         let selectedTimeSig = '4/4';
 
+        const chordDef = (labels, rootLabel, suffix) => ({ labels, rootLabel, suffix });
+
         function generateExercise(numMeasures, levelId, rhythmComplexity) {
             if (isPlaying) stopPlayback();
             
@@ -892,88 +908,114 @@
             let isCadenceLevel = levelId === 7 || levelId === 8 || levelId >= 11;
             let measureChords = [];
             let measureBassMidi = []; 
+            let measureChordMidis = []; 
 
             if (isCadenceLevel) {
                 let prog;
                 if (levelId === 7 || levelId === 8) {
-                    if (reqType === 'maj') prog = [ ['1','3','5'], ['4','6','1'], ['5','7','2','4'], ['1','3','5'] ];
-                    else prog = [ ['1','b3','5'], ['4','b6','1'], ['5','7','2','4'], ['1','b3','5'] ];
+                    if (reqType === 'maj') prog = [ chordDef(['1','3','5'],'1',''), chordDef(['4','6','1'],'4',''), chordDef(['5','7','2','4'],'5','7'), chordDef(['1','3','5'],'1','') ];
+                    else prog = [ chordDef(['1','b3','5'],'1','m'), chordDef(['4','b6','1'],'4','m'), chordDef(['5','7','2','4'],'5','7'), chordDef(['1','b3','5'],'1','m') ];
                 } else if (levelId === 11) {
                     if (reqType === 'maj') {
                         const opts = [
-                            [['1','3','5'], ['7','2','4','5'], ['1','3','5']], 
-                            [['1','3','5'], ['2','4','5','7'], ['1','3','5']], 
-                            [['1','3','5'], ['4','5','7','2'], ['3','5','1']]  
+                            [chordDef(['1','3','5'],'1',''), chordDef(['7','2','4','5'],'5','7'), chordDef(['1','3','5'],'1','')], 
+                            [chordDef(['1','3','5'],'1',''), chordDef(['2','4','5','7'],'5','7'), chordDef(['1','3','5'],'1','')], 
+                            [chordDef(['1','3','5'],'1',''), chordDef(['4','5','7','2'],'5','7'), chordDef(['3','5','1'],'1','')]  
                         ];
                         prog = opts[Math.floor(Math.random() * opts.length)];
                     } else {
                         const opts = [
-                            [['1','b3','5'], ['7','2','4','5'], ['1','b3','5']], 
-                            [['1','b3','5'], ['2','4','5','7'], ['1','b3','5']], 
-                            [['1','b3','5'], ['4','5','7','2'], ['b3','5','1']]  
+                            [chordDef(['1','b3','5'],'1','m'), chordDef(['7','2','4','5'],'5','7'), chordDef(['1','b3','5'],'1','m')], 
+                            [chordDef(['1','b3','5'],'1','m'), chordDef(['2','4','5','7'],'5','7'), chordDef(['1','b3','5'],'1','m')], 
+                            [chordDef(['1','b3','5'],'1','m'), chordDef(['4','5','7','2'],'5','7'), chordDef(['b3','5','1'],'1','m')]  
                         ];
                         prog = opts[Math.floor(Math.random() * opts.length)];
                     }
                 } else if (levelId === 12) {
-                    if (reqType === 'maj') prog = [ ['1','3','5'], ['7','2','4', '6'], ['1','3','5'] ];
-                    else prog = [ ['1','b3','5'], ['7','2','4', 'b6'], ['1','b3','5'] ];
+                    if (reqType === 'maj') prog = [ chordDef(['1','3','5'],'1',''), chordDef(['7','2','4', '6'],'7','ø7'), chordDef(['1','3','5'],'1','') ];
+                    else prog = [ chordDef(['1','b3','5'],'1','m'), chordDef(['7','2','4', 'b6'],'7','°7'), chordDef(['1','b3','5'],'1','m') ];
                 } else if (levelId === 13) {
                     if (reqType === 'maj') {
                         const opts = [
-                            [['1','3','5'], ['6','#1','3','5'], ['2','4','6'], ['5','7','2']], 
-                            [['1','3','5'], ['2','#4','6','1'], ['5','7','2'], ['1','3','5']]  
+                            [chordDef(['1','3','5'],'1',''), chordDef(['6','#1','3','5'],'6','7'), chordDef(['2','4','6'],'2','m'), chordDef(['5','7','2'],'5','')], 
+                            [chordDef(['1','3','5'],'1',''), chordDef(['2','#4','6','1'],'2','7'), chordDef(['5','7','2'],'5',''), chordDef(['1','3','5'],'1','')]  
                         ];
                         prog = opts[Math.floor(Math.random() * opts.length)];
                     } else {
                         const opts = [
-                            [['1','b3','5'], ['1','3','5','b7'], ['4','b6','1'], ['5','7','2']], 
-                            [['1','b3','5'], ['2','#4','6','1'], ['5','7','2'], ['1','b3','5']]  
+                            [chordDef(['1','b3','5'],'1','m'), chordDef(['1','3','5','b7'],'1','7'), chordDef(['4','b6','1'],'4','m'), chordDef(['5','7','2'],'5','')], 
+                            [chordDef(['1','b3','5'],'1','m'), chordDef(['2','#4','6','1'],'2','7'), chordDef(['5','7','2'],'5',''), chordDef(['1','b3','5'],'1','m')]  
                         ];
                         prog = opts[Math.floor(Math.random() * opts.length)];
                     }
                 } else if (levelId === 14) {
                     if (reqType === 'maj') {
                         const opts = [
-                            [['1','3','5'], ['#4','6','1','b3'], ['5','7','2'], ['1','3','5']], 
-                            [['1','3','5'], ['#5','7','2','4'], ['6','1','3'], ['5','7','2']] 
+                            [chordDef(['1','3','5'],'1',''), chordDef(['#4','6','1','b3'],'#4','°7'), chordDef(['5','7','2'],'5',''), chordDef(['1','3','5'],'1','')], 
+                            [chordDef(['1','3','5'],'1',''), chordDef(['#5','7','2','4'],'#5','°7'), chordDef(['6','1','3'],'6','m'), chordDef(['5','7','2'],'5','')] 
                         ];
                         prog = opts[Math.floor(Math.random() * opts.length)];
                     } else {
                         const opts = [
-                            [['1','b3','5'], ['#4','6','1','b3'], ['5','7','2'], ['1','b3','5']], 
-                            [['1','b3','5'], ['7','2','4','b6'], ['1','b3','5'], ['5','7','2']] 
+                            [chordDef(['1','b3','5'],'1','m'), chordDef(['#4','6','1','b3'],'#4','°7'), chordDef(['5','7','2'],'5',''), chordDef(['1','b3','5'],'1','m')], 
+                            [chordDef(['1','b3','5'],'1','m'), chordDef(['7','2','4','b6'],'7','°7'), chordDef(['1','b3','5'],'1','m'), chordDef(['5','7','2'],'5','')] 
                         ];
                         prog = opts[Math.floor(Math.random() * opts.length)];
                     }
                 } else if (levelId === 15) {
                     if (reqType === 'maj') {
                         const opts = [
-                            [['1','3','5'], ['4','b6','b2'], ['5','7','2'], ['1','3','5']], 
-                            [['1','3','5'], ['b6','1','b3','#4'], ['5','1','3'], ['5','7','2']] 
+                            [chordDef(['1','3','5'],'1',''), chordDef(['4','b6','b2'],'b2',''), chordDef(['5','7','2'],'5',''), chordDef(['1','3','5'],'1','')], 
+                            [chordDef(['1','3','5'],'1',''), chordDef(['b6','1','b3','#4'],'b6','7'), chordDef(['5','1','3'],'1',''), chordDef(['5','7','2'],'5','')] 
                         ];
                         prog = opts[Math.floor(Math.random() * opts.length)];
                     } else {
                         const opts = [
-                            [['1','b3','5'], ['4','b6','b2'], ['5','7','2'], ['1','b3','5']], 
-                            [['1','b3','5'], ['b6','1','b3','#4'], ['5','1','b3'], ['5','7','2']] 
+                            [chordDef(['1','b3','5'],'1','m'), chordDef(['4','b6','b2'],'b2',''), chordDef(['5','7','2'],'5',''), chordDef(['1','b3','5'],'1','m')], 
+                            [chordDef(['1','b3','5'],'1','m'), chordDef(['b6','1','b3','#4'],'b6','7'), chordDef(['5','1','b3'],'1','m'), chordDef(['5','7','2'],'5','')] 
                         ];
                         prog = opts[Math.floor(Math.random() * opts.length)];
                     }
                 }
 
                 for (let i = 0; i < numMeasures; i++) {
-                    let chordLabels = (i === numMeasures - 1) ? (reqType === 'maj' ? ['1','3','5'] : ['1','b3','5']) : prog[i % prog.length];
-                    measureChords.push(chordLabels);
+                    let cDef = (i === numMeasures - 1) ? (reqType === 'maj' ? chordDef(['1','3','5'],'1','') : chordDef(['1','b3','5'],'1','m')) : prog[i % prog.length];
+                    measureChords.push(cDef.labels);
                     
-                    let rootLabel = chordLabels[0];
-                    let rootCand = rawPool.find(n => n.label === rootLabel);
-                    if (rootCand) {
-                        let bMidi = (rootCand.midi % 12) + 36;
+                    let bassCand = rawPool.find(n => n.label === cDef.labels[0]);
+                    let rootCand = rawPool.find(n => n.label === cDef.rootLabel);
+                    
+                    if (bassCand && rootCand) {
+                        let bMidi = (bassCand.midi % 12) + 36;
                         if (bMidi < 40) bMidi += 12; 
-                        measureBassMidi.push(bMidi);
+                        
+                        let bLetter = bassCand.noteName.charAt(0).toUpperCase();
+                        let bAcc = bassCand.noteName.substring(1);
+                        let bAnglo = bLetter + bAcc;
+                        let bLatin = LATIN_NAMES[bLetter.toLowerCase()] + (bAcc === 'b' ? 'b' : (bAcc === '#' ? '#' : ''));
+                        
+                        let rLetter = rootCand.noteName.charAt(0).toUpperCase();
+                        let rAcc = rootCand.noteName.substring(1);
+                        let rAnglo = rLetter + rAcc;
+                        let rLatin = LATIN_NAMES[rLetter.toLowerCase()] + (rAcc === 'b' ? 'b' : (rAcc === '#' ? '#' : ''));
+
+                        let dispA = rAnglo + cDef.suffix + (bAnglo !== rAnglo ? '/' + bAnglo : '');
+                        let dispL = rLatin + cDef.suffix + (bLatin !== rLatin ? '/' + bLatin : '');
+
+                        measureBassMidi.push({ midi: bMidi, displayAnglo: dispA, displayLatin: dispL });
                     } else {
                         measureBassMidi.push(null);
                     }
+
+                    let cMidis = [];
+                    cDef.labels.forEach(lbl => {
+                        let cand = rawPool.find(n => n.label === lbl);
+                        if (cand) {
+                            let m = (cand.midi % 12) + 60; 
+                            cMidis.push(m);
+                        }
+                    });
+                    measureChordMidis.push(cMidis);
                 }
             }
 
@@ -1066,9 +1108,11 @@
                         let candidates = [];
                         let prevPitch = currentIndex > 0 ? path[currentIndex - 1] : null;
                         
-                        let currentBassMidi = isCadenceLevel ? measureBassMidi[ev.measureIdx] : null;
+                        let currentBassObj = isCadenceLevel ? measureBassMidi[ev.measureIdx] : null;
+                        let currentBassMidi = currentBassObj ? currentBassObj.midi : null;
                         let prevEv = currentIndex > 0 ? events[currentIndex - 1] : null;
-                        let prevBassMidi = prevEv && isCadenceLevel ? measureBassMidi[prevEv.measureIdx] : null;
+                        let prevBassObj = prevEv && isCadenceLevel ? measureBassMidi[prevEv.measureIdx] : null;
+                        let prevBassMidi = prevBassObj ? prevBassObj.midi : null;
 
                         if (ev.isVeryLastNote) {
                             let tonics = rawPool.filter(n => n.label === '1');
@@ -1279,7 +1323,11 @@
                             for (let j = 0; j < exerciseRhythms[i].rhythms.length; j++) {
                                 measureNotes.push({ rhythm: exerciseRhythms[i].rhythms[j], pitchInfo: path[pathIdx++] });
                             }
-                            exerciseData.push({ notes: measureNotes, bass: isCadenceLevel ? measureBassMidi[i] : null });
+                            exerciseData.push({ 
+                                notes: measureNotes, 
+                                bass: isCadenceLevel ? measureBassMidi[i] : null,
+                                chordMidis: isCadenceLevel ? measureChordMidis[i] : null
+                            });
                         }
                     }
                 }
@@ -1302,16 +1350,23 @@
             const notenameFormat = document.getElementById('notename-select').value;
             const showDegrees = document.getElementById('cb-degrees').checked;
             const timeSigConfig = METER_CONFIGS[selectedTimeSig];
+            const rhythmComplexity = document.getElementById('rhythm-select').value;
 
             const wWidth = window.innerWidth;
+            
+            // PAGINACIÓN INTELIGENTE (Soluciona el amontonamiento visual de ritmos rápidos)
             let measuresPerLine = 4;
             if (wWidth < 768) measuresPerLine = 1;      
             else if (wWidth < 1024) measuresPerLine = 2; 
 
+            if (rhythmComplexity === 'advanced' && measuresPerLine > 2) measuresPerLine = 2;
+            if (rhythmComplexity === 'intermediate' && measuresPerLine > 3) measuresPerLine = 3;
+
             const totalMeasures = exerciseData.length;
             const lines = Math.ceil(totalMeasures / measuresPerLine);
 
-            const canvasHeight = (notenameFormat !== 'none' || showDegrees) ? 180 : 150;
+            // TECHO SEGURO: Aumento estricto de altura para impedir decapitación de acordes
+            const canvasHeight = (notenameFormat !== 'none' || showDegrees) ? 200 : 170;
             const staveWidth = Math.max(280, (container.clientWidth - 40) / measuresPerLine);
 
             let globalNoteIndex = 0;
@@ -1340,7 +1395,9 @@
                     const measure = exerciseData[measureIndex];
                     
                     const actualStaveWidth = staveWidth + (m === 0 && l === 0 ? 50 : 0);
-                    const stave = new VF.Stave(startX, 20, actualStaveWidth);
+                    
+                    // Empuje físico del pentagrama a Y=40 para darle espacio libre superior
+                    const stave = new VF.Stave(startX, 40, actualStaveWidth);
                     
                     if (m === 0 && l === 0) {
                         stave.addClef(selectedClef).addKeySignature(currentKeyInfo.vfKey).addTimeSignature(selectedTimeSig);
@@ -1352,7 +1409,7 @@
 
                     measureAccidentals = {}; 
 
-                    const vexNotes = measure.notes.map((n) => {
+                    const vexNotes = measure.notes.map((n, j) => {
                         const vfNoteString = `${n.pitchInfo.noteName.charAt(0)}${n.pitchInfo.noteName.substring(1)}/${n.pitchInfo.octave}`;
                         const note = new VF.StaveNote({ clef: selectedClef, keys: [vfNoteString], duration: n.rhythm.duration });
                         
@@ -1369,6 +1426,14 @@
                             measureAccidentals[noteLetter] = noteAcc;
                         }
 
+                        // INYECCIÓN ORTODOXA Y SEGURA DE TEXTO SUPERIOR (No colapsa la API de VexFlow)
+                        if (j === 0 && measure.bass) {
+                            let cifradoAnnotation = new VF.Annotation(measure.bass.displayAnglo);
+                            cifradoAnnotation.setFont("sans-serif", 14, "bold");
+                            cifradoAnnotation.setVerticalJustification(VF.Annotation.VerticalJustify.TOP);
+                            note.addAnnotation(0, cifradoAnnotation);
+                        }
+
                         let annotations = [];
                         if (notenameFormat === 'anglo') annotations.push(n.pitchInfo.noteName.toUpperCase());
                         else if (notenameFormat === 'latin') annotations.push(LATIN_NAMES[noteLetter] + (noteAcc === 'b' ? 'b' : (noteAcc === '#' ? '#' : '')));
@@ -1376,7 +1441,10 @@
                         if (showDegrees) annotations.push(n.pitchInfo.label);
 
                         if (annotations.length > 0) {
-                            note.addAnnotation(0, new VF.Annotation(annotations.join('\n')).setFont("sans-serif", 10, "bold").setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM));
+                            let bottomAnnotation = new VF.Annotation(annotations.join('\n'));
+                            bottomAnnotation.setFont("sans-serif", 10, "bold");
+                            bottomAnnotation.setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM);
+                            note.addAnnotation(0, bottomAnnotation);
                         }
 
                         note.setAttribute('id', `vf-note-${globalNoteIndex++}`);
@@ -1607,9 +1675,10 @@
             if (melodyPart) { melodyPart.dispose(); melodyPart = null; }
             if (metronomePart) { metronomePart.dispose(); metronomePart = null; }
             if (bassPart) { bassPart.dispose(); bassPart = null; } 
+            if (chordPart) { chordPart.dispose(); chordPart = null; } 
             
             document.querySelectorAll('.vf-stavenote').forEach(el => el.classList.remove('vf-note-highlighted'));
-            document.getElementById('bass-note-display').innerText = '--'; // Reseteo visual del Bajo
+            document.getElementById('bass-note-display').innerText = '--'; 
             
             const btn = document.getElementById('btn-play');
             btn.disabled = false;
@@ -1630,19 +1699,21 @@
             const volMelody = document.getElementById('vol-melody').value;
             const volMetro = document.getElementById('vol-metro').value;
             const volCadence = document.getElementById('vol-cadence').value;
-            const volBass = document.getElementById('vol-bass').value; // Nueva captura
+            const volBass = document.getElementById('vol-bass').value; 
             
             synth.volume.value = volMelody <= -40 ? -Infinity : volMelody;
             metronomeSynth.volume.value = volMetro <= -40 ? -Infinity : volMetro;
-            cadencePianoSynth.volume.value = volCadence <= -40 ? -Infinity : volCadence;
             
-            // Si el bajo implícito está apagado, forzamos volumen a -Infinity
             const isBassActive = document.getElementById('cb-bass').checked;
+            const isChordsActive = document.getElementById('cb-chords').checked;
+            
+            cadencePianoSynth.volume.value = (!isChordsActive || volCadence <= -40) ? -Infinity : volCadence;
             cadenceBassSynth.volume.value = (!isBassActive || volBass <= -40) ? -Infinity : volBass;
             
             isPlaying = true;
             
             const tempo = parseInt(document.getElementById('tempo-slider').value);
+            const levelId = parseInt(document.getElementById('level-select').value);
             Tone.Transport.bpm.value = tempo;
             
             const btn = document.getElementById('btn-play');
@@ -1687,7 +1758,6 @@
 
                 sequence.forEach((chord, idx) => {
                     Tone.Transport.schedule((t) => {
-                        // El bajo inicial de la cadencia sí suena siempre para establecer la tonalidad
                         cadenceBassSynth.triggerAttackRelease(chord.bass, "2n", t);
                         cadencePianoSynth.triggerAttackRelease(chord.upper, "2n", t);
                     }, idx * (beatDuration * 2)); 
@@ -1699,6 +1769,7 @@
 
             let events = [];
             let bassEvents = []; 
+            let chordEvents = [];
             let currentTimeInBeats = 0;
             let globalIndex = 0;
             const notenameFormat = document.getElementById('notename-select').value;
@@ -1707,16 +1778,11 @@
                 
                 if (measure.bass) {
                     let timeInSeconds = currentTimeInBeats * beatDuration;
-                    let bassToneObj = Tone.Frequency(measure.bass, "midi");
+                    let bassToneObj = Tone.Frequency(measure.bass.midi, "midi");
                     let bassTone = bassToneObj.toNote();
                     let measureDurInBeats = measure.notes.reduce((sum, n) => sum + n.rhythm.beats, 0);
                     
-                    // Cálculo de Nomenclatura para el Display
-                    let noteLetter = bassTone.charAt(0).toLowerCase();
-                    let acc = bassTone.includes('#') ? '#' : (bassTone.includes('b') ? 'b' : '');
-                    let displayStr = '';
-                    if (notenameFormat === 'anglo') displayStr = noteLetter.toUpperCase() + acc;
-                    else displayStr = LATIN_NAMES[noteLetter] + (acc === 'b' ? 'b' : (acc === '#' ? '#' : ''));
+                    let displayStr = notenameFormat === 'anglo' ? measure.bass.displayAnglo : measure.bass.displayLatin;
 
                     bassEvents.push({ 
                         time: timeInSeconds, 
@@ -1724,6 +1790,15 @@
                         dur: measureDurInBeats * beatDuration,
                         display: displayStr 
                     });
+
+                    if (levelId >= 11 && measure.chordMidis) {
+                        let chordTones = measure.chordMidis.map(m => Tone.Frequency(m, "midi").toNote());
+                        chordEvents.push({
+                            time: timeInSeconds,
+                            pitch: chordTones,
+                            dur: measureDurInBeats * beatDuration
+                        });
+                    }
                 }
 
                 measure.notes.forEach((note) => {
@@ -1763,6 +1838,13 @@
                         document.getElementById('bass-note-display').innerText = value.display;
                     }, time);
                 }, bassEvents).start(timeOffsetInSeconds);
+            }
+
+            if (chordPart) chordPart.dispose();
+            if (chordEvents.length > 0 && isChordsActive) { 
+                chordPart = new Tone.Part((time, value) => {
+                    cadencePianoSynth.triggerAttackRelease(value.pitch, value.dur, time);
+                }, chordEvents).start(timeOffsetInSeconds);
             }
 
             if (melodyPart) melodyPart.dispose();
