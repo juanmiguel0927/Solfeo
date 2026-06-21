@@ -9,1905 +9,1144 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; padding: 0; }
-        
-        #score-container { 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            padding: 20px 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-            min-height: 200px;
-        }
-
-        .system-line {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            max-width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
-            margin-bottom: 20px;
-        }
-
-        .vf-note-highlighted path {
-            fill: #e11d48 !important;
-            stroke: #e11d48 !important;
-            stroke-width: 1px;
-            transition: all 0.1s ease;
-        }
-
-        /* Modal Styles */
-        dialog::backdrop { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); }
-        
-        /* Favorites Sidebar */
-        #favorites-sidebar {
-            transition: transform 0.3s ease-in-out;
-            transform: translateX(100%);
-        }
+        #score-container { display: flex; flex-direction: column; align-items: center; width: 100%; padding: 20px 0; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,.1); border: 1px solid #e2e8f0; min-height: 200px; }
+        .system-line { display: flex; justify-content: center; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; margin-bottom: 0px; padding: 0 10px; }
+        .vf-note-highlighted path, .vf-note-highlighted rect { fill: #e11d48 !important; stroke: #e11d48 !important; stroke-width: 1px; transition: all .1s ease; }
+        dialog::backdrop { background: rgba(15, 23, 42, .7); backdrop-filter: blur(4px); }
+        #favorites-sidebar { transition: transform .3s ease-in-out; transform: translateX(100%); }
         #favorites-sidebar.open { transform: translateX(0); }
-        
-        /* Scrollbar personalizada para el Modal */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="p-2 md:p-6 lg:p-8 flex flex-col min-h-screen">
-
     <header class="mb-4 md:mb-6 border-b border-slate-200 pb-4 max-w-7xl mx-auto w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
             <h1 class="text-2xl md:text-3xl font-bold mb-1 md:mb-2 text-slate-900">Arte del Solfeo</h1>
             <p class="text-sm md:text-base text-slate-600">Entrena tu oído. Mejora tu lectura. Potencia tu música.</p>
         </div>
-        
-        <!-- Panel de Telemetría -->
         <div class="bg-slate-800 text-slate-100 rounded-md px-4 py-2 flex gap-6 items-center shadow-inner text-sm md:text-base font-mono w-full md:w-auto justify-center">
-            <div class="flex items-center gap-2" title="Tiempo de sesión activa">
-                <span class="text-slate-400">⏱</span>
-                <span id="session-timer">00:00</span>
-            </div>
+            <div class="flex items-center gap-2" title="Tiempo activo"><span class="text-slate-400">⏱</span><span id="session-timer">00:00</span></div>
             <div class="w-px h-4 bg-slate-600"></div>
-            <div class="flex items-center gap-2" title="Ejercicios practicados en esta sesión">
-                <span class="text-slate-400">📖</span>
-                <span id="session-counter">0</span> <span class="text-xs text-slate-400">ejercicios</span>
-            </div>
+            <div class="flex items-center gap-2" title="Prácticas"><span class="text-slate-400">📖</span><span id="session-counter">0</span> <span class="text-xs text-slate-400">ejercicios</span></div>
         </div>
-
         <div class="flex gap-2 w-full md:w-auto flex-wrap justify-end">
-            <button onclick="exportToMusicXML()" class="bg-blue-100 text-blue-800 border border-blue-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-blue-200 transition-colors" title="Descargar MusicXML [X]">
-                ↓ XML
-            </button>
-            <button onclick="exportToJPEG()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-emerald-200 transition-colors" title="Descargar Imagen JPEG [J]">
-                ↓ JPEG
-            </button>
-            <button onclick="document.getElementById('help-modal').showModal()" class="bg-slate-200 text-slate-800 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-slate-300 transition-colors" title="Ayuda y Atajos [H]">
-                ? Ayuda
-            </button>
-            <button id="btn-toggle-favs" class="bg-amber-100 text-amber-800 border border-amber-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-amber-200 transition-colors" title="Mis Favoritos">
-                ★ Mis Favoritos
-            </button>
-            <button id="btn-fullscreen" class="bg-slate-200 text-slate-800 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-slate-300 transition-colors" title="Pantalla Completa [P]">
-                ⛶ Pantalla
-            </button>
+            <button onclick="exportToMusicXML()" class="bg-blue-100 text-blue-800 border border-blue-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-blue-200">↓ XML</button>
+            <button onclick="exportToJPEG()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-emerald-200">↓ JPEG</button>
+            <button onclick="document.getElementById('help-modal').showModal()" class="bg-slate-200 text-slate-800 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-slate-300">? Ayuda</button>
+            <button id="btn-toggle-favs" class="bg-amber-100 text-amber-800 border border-amber-200 text-xs md:text-sm font-semibold px-3 py-2 rounded-md hover:bg-amber-200">★ Favoritos</button>
         </div>
     </header>
 
     <main class="flex-grow flex gap-6 max-w-7xl mx-auto w-full relative overflow-hidden">
-        
-        <!-- MAIN CONTROLS -->
         <div class="flex-grow space-y-4 md:space-y-6 w-full">
             <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-200">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <div class="lg:col-span-2">
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Niveles Estructurales</label>
-                        <select id="level-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border focus:ring-red-500 focus:border-red-500 transition-colors text-sm md:text-base">
-                            <optgroup label="Melodía Diatónica Estricta">
+                        <select id="level-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border text-sm md:text-base">
+                            <optgroup label="Diatonismo Básico">
                                 <option value="1" selected>Nivel 1: Grados 1, 2, 3 (Mayor)</option>
                                 <option value="2">Nivel 2: Grados 1, 2, b3 (Menor)</option>
-                                <option value="3">Nivel 3: 1, 2, 3 + 4, 7 inferior (Mayor)</option>
-                                <option value="4">Nivel 4: 1, 2, b3 + 4, 7 inferior (Menor)</option>
-                                <option value="5">Nivel 5: Grados 1 al 5 + 6, 7 inferior (Mayor)</option>
-                                <option value="6">Nivel 6: Grados 1 al 5 + b6, 7 inferior (Menor)</option>
+                                <option value="3">Nivel 3: 1, 2, 3 + 4, 7 (Mayor)</option>
+                                <option value="4">Nivel 4: 1, 2, b3 + 4, 7 (Menor)</option>
+                                <option value="5">Nivel 5: 1 al 5 + 6, 7 (Mayor)</option>
+                                <option value="6">Nivel 6: 1 al 5 + b6, 7 (Menor)</option>
                             </optgroup>
-                            <optgroup label="Arpegios Diatónicos">
+                            <optgroup label="Diatonismo Extendido">
                                 <option value="7">Nivel 7: Cadencias Arpegiadas (Mayor)</option>
                                 <option value="8">Nivel 8: Cadencias Arpegiadas (Menor)</option>
                                 <option value="9">Nivel 9: Escala Completa (Mayor)</option>
                                 <option value="10">Nivel 10: Escala Completa (Menor)</option>
                             </optgroup>
-                            <optgroup label="Armonía Cromática Avanzada (G3-G5)">
-                                <option value="11">Nivel 11: Dominante con 7ma e Inversiones</option>
-                                <option value="12">Nivel 12: Acorde de VII7 (Semi y Disminuido)</option>
+                            <optgroup label="Armonía Funcional Avanzada">
+                                <option value="11">Nivel 11: Dominante V7 e Inversiones</option>
+                                <option value="12">Nivel 12: Acorde de VII7 (ø7 / °7)</option>
                                 <option value="13">Nivel 13: Dominantes Secundarias (V7/x)</option>
                                 <option value="14">Nivel 14: Disminuidos Secundarios (vii°7/x)</option>
-                                <option value="15">Nivel 15: 6ta Napolitana y Sextas Aumentadas</option>
+                                <option value="15">Nivel 15: Napolitana y Sextas Aumentadas</option>
                             </optgroup>
                         </select>
                     </div>
-                    
                     <div>
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Clave y Rango</label>
-                        <select id="clef-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border focus:ring-red-500 focus:border-red-500 transition-colors text-sm md:text-base">
-                            <option value="treble">Sol en 2da (Estándar)</option>
-                            <option value="bass">Fa en 4ta (Bajo)</option>
-                            <option value="alto">Do en 3ra (Contralto)</option>
-                            <option value="tenor">Do en 4ta (Tenor)</option>
-                            <option value="soprano">Do en 1ra (Soprano)</option>
+                        <select id="clef-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border text-sm md:text-base">
+                            <option value="treble">Sol en 2da</option>
+                            <option value="bass">Fa en 4ta</option>
+                            <option value="alto">Do en 3ra</option>
+                            <option value="tenor">Do en 4ta</option>
+                            <option value="soprano">Do en 1ra</option>
                         </select>
                     </div>
-
                     <div>
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Compás</label>
-                        <select id="timesig-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border focus:ring-red-500 focus:border-red-500 transition-colors text-sm md:text-base">
+                        <select id="timesig-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border text-sm md:text-base">
                             <optgroup label="Simples">
-                                <option value="2/2">2/2</option>
-                                <option value="3/2">3/2</option>
-                                <option value="2/4">2/4</option>
-                                <option value="3/4">3/4</option>
-                                <option value="4/4" selected>4/4</option>
-                                <option value="3/8">3/8</option>
-                                <option value="2/16">2/16</option>
-                                <option value="3/16">3/16</option>
+                                <option value="2/2">2/2</option><option value="3/2">3/2</option><option value="2/4">2/4</option><option value="3/4">3/4</option><option value="4/4" selected>4/4</option><option value="3/8">3/8</option><option value="2/16">2/16</option><option value="3/16">3/16</option>
                             </optgroup>
                             <optgroup label="Compuestos">
-                                <option value="6/4">6/4</option>
-                                <option value="6/8">6/8</option>
-                                <option value="9/8">9/8</option>
-                                <option value="12/8">12/8</option>
-                                <option value="6/16">6/16</option>
-                                <option value="9/16">9/16</option>
+                                <option value="6/4">6/4</option><option value="6/8">6/8</option><option value="9/8">9/8</option><option value="12/8">12/8</option><option value="6/16">6/16</option><option value="9/16">9/16</option>
                             </optgroup>
                         </select>
                     </div>
-
                     <div>
-                        <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Complejidad Rítmica</label>
-                        <select id="rhythm-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border focus:ring-red-500 focus:border-red-500 transition-colors text-sm md:text-base">
-                            <option value="basic">Básica (Pulsos largos)</option>
-                            <option value="intermediate" selected>Intermedia (Divisiones simples)</option>
-                            <option value="advanced">Avanzada (Subdivisiones)</option>
+                        <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Ritmo</label>
+                        <select id="rhythm-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border text-sm md:text-base">
+                            <option value="basic">Básico</option>
+                            <option value="intermediate" selected>Intermedio</option>
+                            <option value="advanced">Avanzado</option>
                         </select>
                     </div>
-
                     <div>
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Compases</label>
                         <input type="number" id="measures-input" min="4" max="32" value="8" step="4" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border text-sm md:text-base">
                     </div>
-
                     <div>
-                        <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Afinación Previa</label>
-                        <select id="cadence-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border focus:ring-red-500 focus:border-red-500 transition-colors text-sm md:text-base">
+                        <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Pre-Afinación</label>
+                        <select id="cadence-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border text-sm md:text-base">
                             <option value="none">Ninguna</option>
                             <option value="IVI">I - V - I</option>
                             <option value="IIVVI" selected>I - IV - V - I</option>
                         </select>
                     </div>
-                    
                     <div class="lg:col-span-2">
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Tempo (<span id="bpm-val">80</span> BPM)</label>
                         <input type="range" id="tempo-slider" min="40" max="160" value="80" class="block w-full mt-2 accent-red-600">
                     </div>
 
-                    <!-- Fila de Mixers de Audio -->
                     <div class="lg:col-span-4 mt-2 p-3 md:p-4 bg-slate-100 border border-slate-200 rounded-md grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 items-center">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Melodía</label>
-                            <input type="range" id="vol-melody" min="-40" max="5" value="-5" class="block w-full accent-slate-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Metrónomo</label>
-                            <input type="range" id="vol-metro" min="-40" max="5" value="-10" class="block w-full accent-slate-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Acordes</label>
-                            <input type="range" id="vol-cadence" min="-40" max="5" value="-8" class="block w-full accent-slate-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Bajo</label>
-                            <input type="range" id="vol-bass" min="-40" max="5" value="-2" class="block w-full accent-slate-800">
-                        </div>
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Melodía</label><input type="range" id="vol-melody" min="-40" max="5" value="-5" class="block w-full accent-slate-800"></div>
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Metrónomo</label><input type="range" id="vol-metro" min="-40" max="5" value="-10" class="block w-full accent-slate-800"></div>
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Acordes</label><input type="range" id="vol-cadence" min="-40" max="5" value="-8" class="block w-full accent-slate-800"></div>
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Vol. Bajo</label><input type="range" id="vol-bass" min="-40" max="5" value="-2" class="block w-full accent-slate-800"></div>
                     </div>
 
-                    <!-- Fila de Switches y Anotaciones -->
                     <div class="lg:col-span-4 mt-2 p-3 bg-slate-50 border border-slate-200 rounded-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex flex-wrap gap-4 items-center">
-                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold text-slate-700 cursor-pointer">
-                                <input type="checkbox" id="cb-metro-cont" class="rounded border-slate-300 text-red-600 focus:ring-red-500">
-                                <span>Metrónomo Continuo</span>
-                            </label>
-                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold text-slate-700 cursor-pointer">
-                                <input type="checkbox" id="cb-bass" checked class="rounded border-slate-300 text-red-600 focus:ring-red-500">
-                                <span>Bajo Implícito</span>
-                            </label>
-                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold text-slate-700 cursor-pointer">
-                                <input type="checkbox" id="cb-chords" checked class="rounded border-slate-300 text-red-600 focus:ring-red-500">
-                                <span>Acordes (L11+)</span>
-                            </label>
-                            
+                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer"><input type="checkbox" id="cb-metro-cont" class="rounded text-red-600 focus:ring-red-500"><span>Metro. Fijo</span></label>
+                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer"><input type="checkbox" id="cb-bass" checked class="rounded text-red-600 focus:ring-red-500"><span>Bajo</span></label>
+                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer"><input type="checkbox" id="cb-chords" checked class="rounded text-red-600 focus:ring-red-500"><span>Acordes</span></label>
                             <div class="w-px h-4 bg-slate-300 mx-2 hidden md:block"></div>
-
-                            <div class="flex items-center space-x-2">
-                                <label class="text-xs md:text-sm font-semibold text-slate-700">Anotaciones:</label>
-                                <select id="notename-select" class="rounded border-slate-300 text-slate-700 focus:ring-red-500 text-xs md:text-sm p-1 md:p-1.5 bg-white">
-                                    <option value="none">Ocultas</option>
-                                    <option value="latin">Do, Re, Mi</option>
-                                    <option value="anglo">C, D, E</option>
-                                </select>
-                            </div>
-                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold text-slate-700 cursor-pointer">
-                                <input type="checkbox" id="cb-degrees" class="rounded border-slate-300 text-red-600 focus:ring-red-500">
-                                <span>Mostrar Grados</span>
-                            </label>
+                            <div class="flex items-center space-x-2"><label class="text-xs md:text-sm font-semibold">Notas:</label><select id="notename-select" class="rounded p-1 text-sm"><option value="none">Ocultas</option><option value="latin">Do, Re, Mi</option><option value="anglo">C, D, E</option></select></div>
+                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer"><input type="checkbox" id="cb-deg-tonal" class="rounded text-red-600 focus:ring-red-500"><span>Gr. Tonal</span></label>
+                            <label id="lbl-deg-chord" class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer hidden"><input type="checkbox" id="cb-deg-chord" class="rounded text-red-600 focus:ring-red-500"><span>Gr. Acorde</span></label>
                         </div>
-                        
-                        <!-- Crutch Visual del Acorde -->
-                        <div class="flex-shrink-0 bg-white border border-slate-300 px-3 py-1.5 rounded-md shadow-sm flex items-center justify-center gap-2 w-full md:w-auto mt-2 md:mt-0" title="Lectura digital (Solo se activa durante la reproducción)">
-                            <span class="text-xs md:text-sm font-bold text-slate-700 uppercase tracking-wide">Acorde:</span>
-                            <span id="bass-note-display" class="font-mono text-sm md:text-base font-bold text-red-600 min-w-[3rem] text-center inline-block">--</span>
+                        <div class="flex-shrink-0 bg-white border border-slate-300 px-3 py-1.5 rounded-md shadow-sm flex items-center justify-center gap-2 mt-2 md:mt-0">
+                            <span class="text-xs font-bold uppercase">Acorde:</span><span id="bass-note-display" class="font-mono text-sm font-bold text-red-600 min-w-[3rem] text-center">--</span>
                         </div>
                     </div>
                     
-                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 lg:col-span-4 mt-4" id="action-buttons-container">
-                        <button id="btn-generate" class="flex-1 bg-slate-800 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-slate-900 transition-colors shadow-sm text-sm md:text-lg">
-                            Generar Nuevo [G]
-                        </button>
-                        <button id="btn-play" disabled class="flex-1 bg-red-600 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm flex justify-center items-center gap-2 text-sm md:text-lg">
-                            <span id="play-icon">▶</span>
-                            <span id="play-text">Comenzar [Space]</span>
-                        </button>
-                        <button id="btn-save-fav" disabled class="sm:flex-none bg-amber-500 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-amber-600 disabled:opacity-50 transition-colors shadow-sm text-sm md:text-lg" title="Guardar en Favoritos [F]">
-                            ★ Guardar
-                        </button>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 lg:col-span-4 mt-4">
+                        <button id="btn-generate" class="flex-1 bg-slate-800 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-slate-900 shadow-sm text-sm md:text-lg">Generar Nuevo [G]</button>
+                        <button id="btn-play" disabled class="flex-1 bg-red-600 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-red-700 shadow-sm flex justify-center items-center gap-2 text-sm md:text-lg"><span id="play-icon">▶</span><span id="play-text">Comenzar [Space]</span></button>
+                        <button id="btn-save-fav" disabled class="sm:flex-none bg-amber-500 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-amber-600 shadow-sm text-sm md:text-lg">★ Guardar Favorito</button>
                     </div>
                 </div>
-                <div id="status-display" class="mt-4 text-xs md:text-sm font-medium text-slate-800 bg-slate-100 p-2 md:p-3 rounded-md border border-slate-200 hidden"></div>
+                <div id="status-display" class="mt-4 text-xs md:text-sm font-medium text-slate-800 bg-slate-100 p-2 md:p-3 rounded-md border hidden"></div>
             </div>
-
             <div class="w-full mt-6" id="fullscreen-target">
-                <div id="score-container">
-                    <div class="text-slate-400 italic text-center py-12 w-full text-base md:text-lg">Iniciando Motor Analítico CSP...</div>
-                </div>
+                <div id="score-container"><div class="text-slate-400 italic text-center py-12 w-full text-base md:text-lg">Iniciando Motor Analítico CSP...</div></div>
             </div>
         </div>
 
-        <!-- FAVORITES SIDEBAR -->
         <aside id="favorites-sidebar" class="fixed inset-y-0 right-0 w-80 bg-white shadow-2xl border-l border-slate-200 z-50 flex flex-col">
-            <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h2 class="text-lg font-bold text-slate-800">Mis Favoritos</h2>
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <h2 class="text-lg font-bold">Mis Favoritos</h2>
                 <button id="btn-close-favs" class="text-slate-500 hover:text-red-600 text-xl font-bold">&times;</button>
             </div>
             <div id="favorites-list" class="flex-grow overflow-y-auto p-4 space-y-3">
-                <p class="text-sm text-slate-500 italic text-center mt-10">No has guardado ningún ejercicio aún.</p>
+                <p class="text-sm text-slate-500 italic text-center mt-10">No hay favoritos.</p>
             </div>
         </aside>
-
     </main>
 
-    <!-- HELP MODAL -->
-    <dialog id="help-modal" class="rounded-lg shadow-2xl p-0 w-11/12 max-w-3xl border border-slate-200 backdrop:bg-slate-900/50">
+    <dialog id="help-modal" class="rounded-lg shadow-2xl p-0 w-11/12 max-w-4xl border border-slate-200 backdrop:bg-slate-900/50">
         <div class="p-6 flex flex-col h-full max-h-[85vh]">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4 flex-shrink-0">Manual de Usuario y Plan de Estudios</h2>
-            
-            <div class="overflow-y-auto flex-grow pr-2 space-y-6 text-sm text-slate-700 custom-scrollbar">
-                
-                <section>
-                    <h3 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-1 mb-3">Herramientas del Motor CSP (Constraint Satisfaction Problem)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <p><strong>Niveles Estructurales:</strong> Define la matriz matemática de alturas, acordes permitidos y las reglas de conducción de voces. Resuelto mediante Backtracking.</p>
-                            <p class="mt-2"><strong>Clave y Rango:</strong> Adapta el centro de gravedad del ejercicio a la tesitura natural de la voz o instrumento.</p>
-                            <p class="mt-2"><strong>Compás y Complejidad:</strong> El motor reconoce la unidad real del compás y pre-computa el esqueleto rítmico antes de aplicar alturas.</p>
-                            <p class="mt-2"><strong>Afinación Previa:</strong> El V grado siempre se fuerza como acorde Mayor (Dominante) por rigor tonal, incluso en modos menores.</p>
-                        </div>
-                        <div>
-                            <p><strong>Deslizadores (Tempo y Volúmenes):</strong> Controlan la mezcla y el reloj MIDI del transporte de Tone.js.</p>
-                            <p class="mt-2"><strong>Telemetría (Panel Superior):</strong> Mide el tiempo de sesión efectivo y cuantifica las partituras resueltas y reproducidas.</p>
-                            <p class="mt-2"><strong>Exportación (XML/JPEG):</strong> Permite guardar la partitura o exportar los datos serializados a formato MusicXML estándar para su manipulación en DAWs y editores externos.</p>
-                        </div>
-                    </div>
-                </section>
-
-                <section>
-                    <h3 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-1 mb-3">Plan de Estudios: Niveles Melódicos</h3>
-                    <div class="space-y-4">
-                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <h4 class="font-bold text-slate-900 mb-1">Diatonismo Básico (Restricción Absoluta)</h4>
-                            <p><strong>Niveles 1 y 2:</strong> Algoritmo encerrado matemáticamente en los grados 1, 2 y 3 (o b3). El motor CSP iterará sin compasión para evitar salirse de estas notas.</p>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <h4 class="font-bold text-slate-900 mb-1">Expansión Diatónica Lineal</h4>
-                            <p><strong>Niveles 3 a 6:</strong> Inyección de vectores gravitacionales tonales (ej. sensibles obligadas a resolver) e intervalos periféricos.</p>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <h4 class="font-bold text-slate-900 mb-1">Estructuras Arpegiadas y Escalas</h4>
-                            <p><strong>Niveles 7 a 10:</strong> Mapeo forzado sobre esqueletos armónicos subyacentes I-IV-V-I. El motor calcula las aproximaciones estocásticas más eficientes al acorde del momento.</p>
-                        </div>
-                        <div class="bg-red-50 p-3 rounded border border-red-200">
-                            <h4 class="font-bold text-red-900 mb-1">Armonía Cromática Avanzada (Motor Voice Leading)</h4>
-                            <p class="text-red-800 text-xs mb-2"><em>Las reglas de contrapunto pre-tonal se desconectan. La matriz se resuelve por conducción de voces parsimoniosa (Voice Leading) y filtro estricto anti-quintas/octavas paralelas respecto al bajo implícito. A partir del Nivel 11, la armonía (acordes completos) sonará durante el ejercicio para facilitar la afinación cromática.</em></p>
-                            <ul class="list-disc pl-5 space-y-1 text-red-900">
-                                <li><strong>Nivel 11:</strong> V7 e Inversiones.</li>
-                                <li><strong>Nivel 12:</strong> Séptima Disminuida (vii°7).</li>
-                                <li><strong>Nivel 13:</strong> Dominantes Secundarias.</li>
-                                <li><strong>Nivel 14:</strong> Disminuidos Secundarios.</li>
-                                <li><strong>Nivel 15:</strong> Sextas Aumentadas y Sexta Napolitana.</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <section>
-                    <h3 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-1 mb-3">Atajos de Teclado (Shortcuts)</h3>
-                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4">
-                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">Space</kbd> <span class="ml-1">Reproducir / Detener</span></li>
-                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">G</kbd> <span class="ml-1">Generar Nuevo Ejercicio</span></li>
-                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">M</kbd> <span class="ml-1">Metrónomo Continuo (On/Off)</span></li>
-                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">F</kbd> <span class="ml-1">Guardar en Favoritos</span></li>
-                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">P</kbd> <span class="ml-1">Pantalla Completa</span></li>
-                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">X</kbd> <span class="ml-1">Exportar a MusicXML</span></li>
-                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">J</kbd> <span class="ml-1">Exportar a JPEG</span></li>
-                        <li><kbd class="bg-white border border-slate-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-xs">ESC</kbd> <span class="ml-1">Cerrar ventanas o salir</span></li>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b pb-2">Manual de Herramientas y Controles</h2>
+            <div class="overflow-y-auto flex-grow pr-2 space-y-5 text-sm text-slate-700 custom-scrollbar">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base mb-1">1. Lógica Modal Relativa (Niveles Diatónicos 1 al 10)</h3>
+                    <p>El motor evalúa matemáticamente el <strong>grado relativo</strong> que ocupa el acorde dentro de la tonalidad madre para imponer la escala correcta. Ejemplo: En Sol Mayor, un acorde de Re Mayor (V) usa Mixolidio de Re, manteniendo la armadura de Sol pura.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base mb-1">2. Funciones Estructurales de Schoenberg (Máquina Markov)</h3>
+                    <p>Las progresiones se estructuran dinámicamente evaluando el movimiento de fundamentales y el peso del compás, priorizando resoluciones fuertes para los tiempos métricos relevantes y prohibiendo la concatenación ciega de acordes inestables.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base mb-1">3. Reglas de Contrapunto (Cantabilidad)</h3>
+                    <p>El motor implementa restricciones vocales estrictas para que la melodía sea natural de cantar, prohibiendo tritonos, obligando compensación melódica y manteniendo un rango tesitural cerrado.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base mb-1">4. Jerarquía de Análisis Bi-Axial (Inyección SVG)</h3>
+                    <p>Las anotaciones gráficas se imprimen inyectando texto absoluto en el DOM del SVG, ignorando las cajas de colisión. Esto asegura una cuadrícula cartesiana inquebrantable que no rebota con las plicas:</p>
+                    <ul class="list-decimal pl-5 mt-1 space-y-1">
+                        <li><strong>Nombre de la Nota:</strong> Anglo o Latino. Cifrado americano estandarizado (Ej: Bb, C#).</li>
+                        <li><strong>Gr. Tonal:</strong> Grado funcional respecto a la armadura (Ej: 5).</li>
+                        <li><strong>Gr. Acorde:</strong> Grado funcional respecto a la fundamental del acorde pasajero, acotado sutilmente con un corchete final (Ej: b3]).</li>
                     </ul>
-                </section>
-                
+                </div>
             </div>
-            
-            <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end flex-shrink-0">
-                <button onclick="document.getElementById('help-modal').close()" class="bg-slate-800 text-white px-6 py-2 rounded-md font-medium hover:bg-slate-900 transition-colors">Entendido</button>
+            <div class="mt-6 pt-4 border-t flex justify-between items-center">
+                <span class="text-xs text-slate-400 italic">Desarrollado por: Juan Miguel Rios Redondo</span>
+                <button onclick="document.getElementById('help-modal').close()" class="bg-slate-800 text-white px-6 py-2 rounded-md hover:bg-slate-900">Entendido</button>
             </div>
         </div>
     </dialog>
 
-    <footer class="mt-auto pt-8 pb-4 text-center text-sm font-medium text-slate-500">
-        Desarrollado por: Juan Miguel Rios Redondo
-    </footer>
+    <footer class="mt-auto pt-8 pb-4 text-center text-sm font-medium text-slate-500">Desarrollado por: Juan Miguel Rios Redondo</footer>
 
     <script>
         const VF = Vex.Flow;
-        let exerciseData = []; 
-        let synth = null;
-        let cadencePianoSynth = null;
-        let cadenceBassSynth = null;
-        let metronomeSynth = null; 
-        let melodyPart = null;
-        let metronomePart = null;  
-        let bassPart = null; 
-        let chordPart = null; 
-        let isPlaying = false;
-        let currentKeyInfo = null;
-        let baseRootMidi = null;
-
-        let favorites = [];
-        let currentExerciseId = null;
+        let exD = [], sy = null, cP = null, cB = null, mSy = null, mP = null, mtP = null, bP = null, chP = null;
+        let isP = false, cK = null, stS = 0, ePr = 0, tI = null;
+        let currentNoteIndex = -1;
+        let favs = [];
         
-        let studySeconds = 0;
-        let exercisesPracticed = 0;
-        let timerInterval = null;
-
-        function updateTimerDisplay() {
-            const mins = Math.floor(studySeconds / 60).toString().padStart(2, '0');
-            const secs = (studySeconds % 60).toString().padStart(2, '0');
-            document.getElementById('session-timer').innerText = `${mins}:${secs}`;
+        function uT() { 
+            document.getElementById('session-timer').innerText = `${Math.floor(stS / 60).toString().padStart(2, '0')}:${(stS % 60).toString().padStart(2, '0')}`; 
         }
-
-        function startStudyTimer() {
-            if (!timerInterval) {
-                timerInterval = setInterval(() => {
-                    studySeconds++;
-                    updateTimerDisplay();
-                }, 1000);
-            }
-        }
-
-        function saveConfigToStorage() {
-            localStorage.setItem('artesolfeo_level', document.getElementById('level-select').value);
-            localStorage.setItem('artesolfeo_clef', document.getElementById('clef-select').value);
-            localStorage.setItem('artesolfeo_timesig', document.getElementById('timesig-select').value);
-            localStorage.setItem('artesolfeo_rhythm', document.getElementById('rhythm-select').value);
-        }
-
-        function loadConfigFromStorage() {
-            const savedLevel = localStorage.getItem('artesolfeo_level');
-            const savedClef = localStorage.getItem('artesolfeo_clef');
-            const savedTimeSig = localStorage.getItem('artesolfeo_timesig');
-            const savedRhythm = localStorage.getItem('artesolfeo_rhythm');
-
-            if (savedLevel) document.getElementById('level-select').value = savedLevel;
-            else document.getElementById('level-select').value = '1';
-
-            if (savedClef) document.getElementById('clef-select').value = savedClef;
-            if (savedTimeSig) document.getElementById('timesig-select').value = savedTimeSig;
-            if (savedRhythm) document.getElementById('rhythm-select').value = savedRhythm;
-        }
-
-        document.getElementById('btn-toggle-favs').addEventListener('click', () => {
-            document.getElementById('favorites-sidebar').classList.toggle('open');
-        });
-        document.getElementById('btn-close-favs').addEventListener('click', () => {
-            document.getElementById('favorites-sidebar').classList.remove('open');
-        });
-
-        function saveFavorite() {
-            if (exerciseData.length === 0) return;
-            const favId = 'fav_' + Date.now();
-            const configObj = {
-                id: favId,
-                date: new Date().toLocaleTimeString(),
-                level: document.getElementById('level-select').options[document.getElementById('level-select').selectedIndex].text,
-                key: currentKeyInfo.name,
-                clef: document.getElementById('clef-select').value,
-                timeSig: document.getElementById('timesig-select').value,
-                tempo: document.getElementById('tempo-slider').value,
-                data: JSON.parse(JSON.stringify(exerciseData)),
-                keyInfo: currentKeyInfo
-            };
-            favorites.push(configObj);
-            currentExerciseId = favId;
-            renderFavoritesList();
-        }
-
-        function loadFavorite(favId) {
-            if (isPlaying) stopPlayback();
-            const fav = favorites.find(f => f.id === favId);
-            if (!fav) return;
-            
-            exerciseData = fav.data;
-            currentKeyInfo = fav.keyInfo;
-            selectedClef = fav.clef;
-            selectedTimeSig = fav.timeSig;
-            document.getElementById('tempo-slider').value = fav.tempo;
-            document.getElementById('bpm-val').innerText = fav.tempo;
-            document.getElementById('timesig-select').value = fav.timeSig;
-            document.getElementById('clef-select').value = fav.clef;
-            
-            document.getElementById('status-display').innerHTML = `<strong>★ FAVORITO CARGADO:</strong> ${fav.key} &nbsp;|&nbsp; <strong>Clave:</strong> ${fav.clef} &nbsp;|&nbsp; <strong>Compás:</strong> ${fav.timeSig}`;
-            
-            drawScoreResponsive();
-            document.getElementById('btn-play').disabled = false;
-            document.getElementById('favorites-sidebar').classList.remove('open');
-        }
-
-        function renderFavoritesList() {
-            const listEl = document.getElementById('favorites-list');
-            if (favorites.length === 0) {
-                listEl.innerHTML = '<p class="text-sm text-slate-500 italic text-center mt-10">No has guardado ningún ejercicio aún.</p>';
-                return;
-            }
-            listEl.innerHTML = '';
-            favorites.forEach(fav => {
-                const div = document.createElement('div');
-                div.className = 'p-3 bg-white border border-amber-200 rounded shadow-sm hover:shadow text-sm cursor-pointer hover:border-amber-400 transition-all';
-                div.innerHTML = `
-                    <div class="font-bold text-slate-800">${fav.level}</div>
-                    <div class="text-slate-600 mt-1">${fav.key} | ${fav.timeSig} | ${fav.tempo} BPM</div>
-                    <div class="text-xs text-slate-400 mt-2 text-right">${fav.date}</div>
-                `;
-                div.onclick = () => loadFavorite(fav.id);
-                listEl.appendChild(div);
-            });
-        }
-
-        document.getElementById('btn-save-fav').addEventListener('click', saveFavorite);
-
-        document.addEventListener('keydown', (e) => {
-            if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) {
-                if (e.key === 'Escape') {
-                    e.target.blur();
-                    document.getElementById('help-modal').close();
-                    document.getElementById('favorites-sidebar').classList.remove('open');
-                    if (document.fullscreenElement) document.exitFullscreen();
-                }
-                return;
-            }
-
-            switch(e.key.toLowerCase()) {
-                case ' ':
-                    e.preventDefault(); 
-                    if (!document.getElementById('btn-play').disabled) {
-                        if (isPlaying) stopPlayback(); else playMelody();
-                    }
-                    break;
-                case 'g':
-                    e.preventDefault();
-                    document.getElementById('btn-generate').click();
-                    break;
-                case 'm':
-                    e.preventDefault();
-                    const cb = document.getElementById('cb-metro-cont');
-                    cb.checked = !cb.checked;
-                    break;
-                case 'f':
-                    e.preventDefault();
-                    if (!document.getElementById('btn-save-fav').disabled) saveFavorite();
-                    break;
-                case 'p':
-                    e.preventDefault();
-                    document.getElementById('btn-fullscreen').click();
-                    break;
-                case 'x':
-                    e.preventDefault();
-                    if (exerciseData.length > 0) exportToMusicXML();
-                    break;
-                case 'j':
-                    e.preventDefault();
-                    if (exerciseData.length > 0) exportToJPEG();
-                    break;
-                case 'h':
-                case '?':
-                    e.preventDefault();
-                    document.getElementById('help-modal').showModal();
-                    break;
-                case 'escape':
-                    document.getElementById('help-modal').close();
-                    document.getElementById('favorites-sidebar').classList.remove('open');
-                    if (document.fullscreenElement) document.exitFullscreen();
-                    break;
-            }
-        });
-
-        document.getElementById('btn-fullscreen').addEventListener('click', () => {
-            const wrapper = document.getElementById('fullscreen-target');
-            if (!document.fullscreenElement) {
-                wrapper.requestFullscreen().catch(err => alert(`Error: ${err.message}`));
-                wrapper.classList.add('bg-white', 'p-8', 'overflow-y-auto');
-            } else {
-                document.exitFullscreen();
-            }
-        });
-        document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement) {
-                document.getElementById('fullscreen-target').classList.remove('bg-white', 'p-8', 'overflow-y-auto');
-            }
-            if (exerciseData.length > 0) drawScoreResponsive(); 
-        });
-
-        document.getElementById('tempo-slider').addEventListener('input', (e) => {
-            document.getElementById('bpm-val').innerText = e.target.value;
-            if (isPlaying) Tone.Transport.bpm.value = e.target.value;
-        });
-        document.getElementById('vol-melody').addEventListener('input', (e) => { if (synth) synth.volume.value = e.target.value <= -40 ? -Infinity : e.target.value; });
-        document.getElementById('vol-metro').addEventListener('input', (e) => { if (metronomeSynth) metronomeSynth.volume.value = e.target.value <= -40 ? -Infinity : e.target.value; });
         
-        document.getElementById('vol-cadence').addEventListener('input', (e) => {
-            const vol = e.target.value <= -40 ? -Infinity : Number(e.target.value);
-            if (cadencePianoSynth) cadencePianoSynth.volume.value = vol;
-        });
+        function sT() { 
+            if (!tI) tI = setInterval(() => { stS++; uT(); }, 1000); 
+        }
         
-        document.getElementById('vol-bass').addEventListener('input', (e) => {
-            const vol = e.target.value <= -40 ? -Infinity : Number(e.target.value);
-            if (cadenceBassSynth) cadenceBassSynth.volume.value = vol;
-        });
+        document.getElementById('btn-toggle-favs').onclick = () => document.getElementById('favorites-sidebar').classList.toggle('open');
+        document.getElementById('btn-close-favs').onclick = () => document.getElementById('favorites-sidebar').classList.remove('open');
+        
+        function saveCfg() { 
+            ['level', 'clef', 'timesig', 'rhythm'].forEach(k => localStorage.setItem(`as_${k}`, document.getElementById(`${k}-select`).value)); 
+        }
+        
+        function lCfg() { 
+            ['level', 'clef', 'timesig', 'rhythm'].forEach(k => { 
+                let v = localStorage.getItem(`as_${k}`); 
+                if (v) document.getElementById(`${k}-select`).value = v; 
+            }); 
+        }
 
-        document.getElementById('notename-select').addEventListener('change', () => { if (exerciseData.length > 0) drawScoreResponsive(); });
-        document.getElementById('cb-degrees').addEventListener('change', () => { if (exerciseData.length > 0) drawScoreResponsive(); });
+        const RHY = {
+            'w': {d:'w',b:4,td:'1n',dt:false}, 'w.': {d:'w',b:6,td:'1n.',dt:true}, 
+            'h': {d:'h',b:2,td:'2n',dt:false}, 'hd': {d:'h',b:3,td:'2n.',dt:true},
+            'q': {d:'q',b:1,td:'4n',dt:false}, 'qd': {d:'q',b:1.5,td:'4n.',dt:true}, 
+            '8': {d:'8',b:0.5,td:'8n',dt:false}, '8d': {d:'8',b:0.75,td:'8n.',dt:true},
+            '16': {d:'16',b:0.25,td:'16n',dt:false}, '16d': {d:'16',b:0.375,td:'16n.',dt:true}, 
+            '32': {d:'32',b:0.125,td:'32n',dt:false}
+        };
 
-        const keyData = [
-            { name: 'Do Mayor', type: 'maj', root: 60, vfKey: 'C', accidentals: {}, degrees: ['c', 'd', 'e', 'f', 'g', 'a', 'b'], fifths: 0 },
-            { name: 'Sol Mayor', type: 'maj', root: 55, vfKey: 'G', accidentals: { f: '#' }, degrees: ['g', 'a', 'b', 'c', 'd', 'e', 'f#'], fifths: 1 },
-            { name: 'Fa Mayor', type: 'maj', root: 53, vfKey: 'F', accidentals: { b: 'b' }, degrees: ['f', 'g', 'a', 'bb', 'c', 'd', 'e'], fifths: -1 },
-            { name: 'La Menor', type: 'min', root: 57, vfKey: 'Am', accidentals: {}, degrees: ['a', 'b', 'c', 'd', 'e', 'f', 'g#'], fifths: 0 },
-            { name: 'Mi Menor', type: 'min', root: 52, vfKey: 'Em', accidentals: { f: '#' }, degrees: ['e', 'f#', 'g', 'a', 'b', 'c', 'd#'], fifths: 1 },
-            { name: 'Re Menor', type: 'min', root: 50, vfKey: 'Dm', accidentals: { b: 'b' }, degrees: ['d', 'e', 'f', 'g', 'a', 'bb', 'c#'], fifths: -1 }
+        const ME = {
+            '2/2':{b:2,t:'simple',bu:'h',mu:'w',dn:2}, '3/2':{b:3,t:'simple',bu:'h',mu:'w.',dn:2}, 
+            '2/4':{b:2,t:'simple',bu:'q',mu:'h',dn:4}, '3/4':{b:3,t:'simple',bu:'q',mu:'hd',dn:4},
+            '4/4':{b:4,t:'simple',bu:'q',mu:'w',dn:4}, '3/8':{b:3,t:'simple',bu:'8',mu:'qd',dn:8}, 
+            '2/16':{b:2,t:'simple',bu:'16',mu:'8',dn:16}, '3/16':{b:3,t:'simple',bu:'16',mu:'8d',dn:16},
+            '6/4':{b:2,t:'compound',bu:'hd',mu:'w.',dn:4}, '6/8':{b:2,t:'compound',bu:'qd',mu:'hd',dn:8}, 
+            '9/8':{b:3,t:'compound',bu:'qd',mu:'hd_qd',dn:8}, '12/8':{b:4,t:'compound',bu:'qd',mu:'w.',dn:8}
+        };
+
+        const FD = { 
+            '1':{s:0,st:0},'b2':{s:1,st:1},'#1':{s:1,st:0},'2':{s:2,st:1},'b3':{s:3,st:2},
+            '#2':{s:3,st:1},'3':{s:4,st:2},'4':{s:5,st:3},'b5':{s:6,st:4},'#4':{s:6,st:3},
+            '5':{s:7,st:4},'b6':{s:8,st:5},'#5':{s:8,st:4},'6':{s:9,st:5},'b7':{s:10,st:6},
+            '#6':{s:10,st:5},'7':{s:11,st:6} 
+        };
+
+        const LN = { 'c':'Do','d':'Re','e':'Mi','f':'Fa','g':'Sol','a':'La','b':'Si' };
+        
+        const CR = { 
+            'treble':{mn:55,mx:81}, 'soprano':{mn:53,mx:79}, 
+            'alto':{mn:48,mx:72}, 'tenor':{mn:43,mx:69}, 'bass':{mn:36,mx:62} 
+        };
+
+        const KD = [
+            {n:'Do Mayor',t:'maj',rt:60,v:'C',ac:{},dg:['c','d','e','f','g','a','b'],ff:0}, 
+            {n:'Sol Mayor',t:'maj',rt:55,v:'G',ac:{f:'#'},dg:['g','a','b','c','d','e','f#'],ff:1},
+            {n:'Fa Mayor',t:'maj',rt:53,v:'F',ac:{b:'b'},dg:['f','g','a','bb','c','d','e'],ff:-1}, 
+            {n:'La Menor',t:'min',rt:57,v:'Am',ac:{},dg:['a','b','c','d','e','f','g#'],ff:0},
+            {n:'Mi Menor',t:'min',rt:52,v:'Em',ac:{f:'#'},dg:['e','f#','g','a','b','c','d#'],ff:1}, 
+            {n:'Re Menor',t:'min',rt:50,v:'Dm',ac:{b:'b'},dg:['d','e','f','g','a','bb','c#'],ff:-1}
         ];
 
-        const CLEF_RANGES = {
-            'treble':  { min: 55, max: 81 }, 
-            'soprano': { min: 53, max: 79 }, 
-            'alto':    { min: 48, max: 72 }, 
-            'tenor':   { min: 43, max: 69 }, 
-            'bass':    { min: 36, max: 62 }  
-        };
-
-        const METER_CONFIGS = {
-            '2/2': { beats: 2, type: 'simple', beatUnit: 'h', measureUnit: 'w', denom: 2 },
-            '3/2': { beats: 3, type: 'simple', beatUnit: 'h', measureUnit: 'w.', denom: 2 },
-            '2/4': { beats: 2, type: 'simple', beatUnit: 'q', measureUnit: 'h', denom: 4 },
-            '3/4': { beats: 3, type: 'simple', beatUnit: 'q', measureUnit: 'hd', denom: 4 },
-            '4/4': { beats: 4, type: 'simple', beatUnit: 'q', measureUnit: 'w', denom: 4 },
-            '3/8': { beats: 3, type: 'simple', beatUnit: '8', measureUnit: 'qd', denom: 8 },
-            '2/16':{ beats: 2, type: 'simple', beatUnit: '16', measureUnit: '8', denom: 16 },
-            '3/16':{ beats: 3, type: 'simple', beatUnit: '16', measureUnit: '8d', denom: 16 },
-            
-            '6/4': { beats: 2, type: 'compound', beatUnit: 'hd', measureUnit: 'w.', denom: 4 },
-            '6/8': { beats: 2, type: 'compound', beatUnit: 'qd', measureUnit: 'hd', denom: 8 },
-            '9/8': { beats: 3, type: 'compound', beatUnit: 'qd', measureUnit: 'hd_qd', denom: 8 },
-            '12/8':{ beats: 4, type: 'compound', beatUnit: 'qd', measureUnit: 'w.', denom: 8 },
-            '6/16':{ beats: 2, type: 'compound', beatUnit: '8d', measureUnit: 'qd', denom: 16 },
-            '9/16':{ beats: 3, type: 'compound', beatUnit: '8d', measureUnit: 'qd_8d', denom: 16 }
-        };
-
-        const DURATION_SCALER = {
-            2:  { 'h':'w', 'hd':'w.', 'q':'h', 'qd':'h.', '8':'q', '8d':'qd', '16':'8' },
-            4:  { 'h':'h', 'hd':'hd', 'q':'q', 'qd':'qd', '8':'8', '8d':'8d', '16':'16' },
-            8:  { 'h':'q', 'hd':'qd', 'q':'8', 'qd':'8d', '8':'16', '8d':'16d', '16':'32' },
-            16: { 'h':'8', 'hd':'8d', 'q':'16', 'qd':'16d', '8':'32', '8d':'32d', '16':'64' }
-        };
-
-        const RHYTHMS = {
-            'w':  { duration: 'w', beats: 4, toneDur: '1n', isDot: false },
-            'w.': { duration: 'w', beats: 6, toneDur: '1n.', isDot: true },
-            'h':  { duration: 'h', beats: 2, toneDur: '2n', isDot: false },
-            'hd': { duration: 'h', beats: 3, toneDur: '2n.', isDot: true }, 
-            'h.': { duration: 'h', beats: 3, toneDur: '2n.', isDot: true }, 
-            'q':  { duration: 'q', beats: 1, toneDur: '4n', isDot: false },
-            'qd': { duration: 'q', beats: 1.5, toneDur: '4n.', isDot: true }, 
-            '8':  { duration: '8', beats: 0.5, toneDur: '8n', isDot: false },
-            '8d': { duration: '8', beats: 0.75, toneDur: '8n.', isDot: true }, 
-            '16': { duration: '16', beats: 0.25, toneDur: '16n', isDot: false },
-            '16d':{ duration: '16', beats: 0.375, toneDur: '16n.', isDot: true },
-            '32': { duration: '32', beats: 0.125, toneDur: '32n', isDot: false },
-            '32d':{ duration: '32', beats: 0.1875, toneDur: '32n.', isDot: true },
-            '64': { duration: '64', beats: 0.0625, toneDur: '64n', isDot: false }
-        };
-
-        function getMotifs(beatUnit, type, complexity) {
-            if (type === 'simple') {
-                let div1 = beatUnit === 'h' ? 'q' : (beatUnit === 'q' ? '8' : (beatUnit === '8' ? '16' : '32'));
-                let div2 = div1 === 'q' ? '8' : (div1 === '8' ? '16' : (div1 === '16' ? '32' : '64'));
-
-                if (complexity === 'basic') return [ [beatUnit] ];
-                if (complexity === 'intermediate') return [ [beatUnit], [div1, div1] ];
-                if (complexity === 'advanced') return [
-                    [beatUnit], [div1, div1],
-                    [div2, div2, div2, div2],
-                    [div1, div2, div2], [div2, div2, div1]
-                ];
-            } else {
-                let base = beatUnit.replace('d', ''); 
-                let div1 = base === 'h' ? 'q' : (base === 'q' ? '8' : (base === '8' ? '16' : '32'));
-                let div2 = div1 === 'q' ? '8' : (div1 === '8' ? '16' : (div1 === '16' ? '32' : '64'));
-
-                if (complexity === 'basic') return [ [beatUnit] ];
-                if (complexity === 'intermediate') return [ [beatUnit], [div1, div1, div1], [base, div1] ];
-                if (complexity === 'advanced') return [
-                    [beatUnit], [div1, div1, div1], [base, div1], [div1, base],
-                    [div2, div2, div2, div2, div2, div2]
-                ];
+        const MOTIFS = {
+            'simple': {
+                'basic': { 'h': [['h']], 'q': [['q']], '8': [['8']], '16': [['16']] },
+                'intermediate': { 'h': [['h'],['q','q']], 'q': [['q'],['8','8']], '8': [['8'],['16','16']], '16': [['16'],['32','32']] },
+                'advanced': { 
+                    'h': [['h'],['q','q'],['8','8','8','8'],['q','8','8']], 
+                    'q': [['q'],['8','8'],['16','16','16','16'],['8','16','16']], 
+                    '8': [['8'],['16','16'],['32','32','32','32'],['16','32','32']], 
+                    '16': [['16'],['32','32']] 
+                }
+            },
+            'compound': {
+                'basic': { 'hd': [['hd']], 'qd': [['qd']], '8d': [['8d']] },
+                'intermediate': { 'hd': [['hd'],['q','q','q'],['h','q']], 'qd': [['qd'],['8','8','8'],['q','8']], '8d': [['8d'],['16','16','16'],['8','16']] },
+                'advanced': { 
+                    'hd': [['hd'],['q','q','q'],['h','q'],['q','h'],['8','8','8','8','8','8']], 
+                    'qd': [['qd'],['8','8','8'],['q','8'],['8','q'],['16','16','16','16','16','16']], 
+                    '8d': [['8d'],['16','16','16'],['8','16'],['16','8'],['32','32','32','32','32','32']] 
+                }
             }
-            return [[beatUnit]];
+        };
+
+        const IMj=[0,2,4,5,7,9,11], IMn=[0,2,3,5,7,8,10], Mix=[0,2,4,5,7,9,10], Mix_b6=[0,2,4,5,7,8,10], Mix_b2_b6=[0,1,4,5,7,8,10];  
+        const DWH=[0,2,3,5,6,8,9,11], Loc=[0,1,3,5,6,8,10], L_2=[0,3,4,6,7,9,11], M_4=[0,2,4,6,7,9,10];      
+        const I_Dor=[0,2,3,5,7,9,10], I_Phr=[0,1,3,5,7,8,10], I_Lyd=[0,2,4,6,7,9,11];
+
+        const cD = (l,r,s,iv) => ({l,r,s,iv});
+
+        function genRh(c, isE, ts, mI, tM) {
+            if(isE) return { rh: ts.mu.includes('_') ? ts.mu.split('_').map(p=>RHY[p]) : [RHY[ts.mu]] };
+            let rh=[], bL=ts.b, isC=(mI===tM-2)||(mI===Math.floor(tM/2)-2), isR=(mI===0)||(mI===Math.floor(tM/2));
+            while(bL>0){
+                let f=false; 
+                if(bL>=2){ 
+                    if(isC&&c!=='basic') f=false; 
+                    else if(isR) f=Math.random()>0.3; 
+                    else if(c==='basic') f=Math.random()>0.5; 
+                    else if(c==='intermediate') f=Math.random()>0.7; 
+                }
+                if(f){ 
+                    let fd = ts.t==='simple' ? (ts.bu==='q'?'h':(ts.bu==='8'?'q':(ts.bu==='h'?'w':''))) : (ts.bu==='qd'?'hd':(ts.bu==='8d'?'qd':'')); 
+                    if(fd && RHY[fd]){ rh.push(RHY[fd]); bL-=2; continue; } 
+                }
+                let bMs = MOTIFS[ts.t][isC?'advanced':c][ts.bu] || [[ts.bu]]; 
+                let mo = bMs[Math.floor(Math.random()*bMs.length)]; 
+                for(let d of mo) rh.push(RHY[d]); 
+                bL-=1;
+            } 
+            return {rh};
         }
 
-        const LATIN_NAMES = { 'c':'Do', 'd':'Re', 'e':'Mi', 'f':'Fa', 'g':'Sol', 'a':'La', 'b':'Si' };
-
-        const FUNCTIONAL_DEGREES = {
-            '1':  { semi: 0,  step: 0 },
-            'b2': { semi: 1,  step: 1 },
-            '#1': { semi: 1,  step: 0 },
-            '2':  { semi: 2,  step: 1 },
-            'b3': { semi: 3,  step: 2 },
-            '#2': { semi: 3,  step: 1 },
-            '3':  { semi: 4,  step: 2 },
-            '4':  { semi: 5,  step: 3 },
-            'b5': { semi: 6,  step: 4 },
-            '#4': { semi: 6,  step: 3 },
-            '5':  { semi: 7,  step: 4 },
-            'b6': { semi: 8,  step: 5 },
-            '#5': { semi: 8,  step: 4 },
-            '6':  { semi: 9,  step: 5 },
-            'b7': { semi: 10, step: 6 },
-            '#6': { semi: 10, step: 5 },
-            '7':  { semi: 11, step: 6 }
-        };
-
-        function generateChromaticFunctionalPool(keyInfo, clef, levelId) {
-            const pool = [];
-            let rMin = CLEF_RANGES[clef].min - 5;
-            let rMax = CLEF_RANGES[clef].max + 5;
-            
-            if (levelId >= 11) {
-                rMin = 55;
-                rMax = 79;
-            }
-
-            const notes = ['c', 'd', 'e', 'f', 'g', 'a', 'b'];
-            const rootStep = notes.indexOf(keyInfo.degrees[0].charAt(0));
-
-            for (let oct = 2; oct <= 6; oct++) {
-                for (let label in FUNCTIONAL_DEGREES) {
-                    const func = FUNCTIONAL_DEGREES[label];
-                    const letterStep = (rootStep + func.step) % 7;
-                    const letter = notes[letterStep];
-
-                    const natMidis = {'c':0, 'd':2, 'e':4, 'f':5, 'g':7, 'a':9, 'b':11};
-                    const natMidi = (oct + 1) * 12 + natMidis[letter];
-
-                    let baseMidi = keyInfo.root + func.semi;
-                    let normalizedMidi = baseMidi % 12;
-
-                    let octBaseC = (oct + 1) * 12;
-                    let targetMidi = octBaseC + normalizedMidi;
-
-                    if (targetMidi - natMidi > 6) targetMidi -= 12;
-                    else if (natMidi - targetMidi > 6) targetMidi += 12;
-
-                    if (targetMidi >= rMin && targetMidi <= rMax) {
-                        let diff = targetMidi - natMidi;
-                        let acc = '';
-                        if (diff === 1) acc = '#';
-                        else if (diff === 2) acc = '##';
-                        else if (diff === -1) acc = 'b';
-                        else if (diff === -2) acc = 'bb';
-
-                        pool.push({
-                            midi: targetMidi,
-                            label: label, 
-                            step: func.step,
-                            noteName: letter + acc,
-                            octave: Math.floor(targetMidi / 12) - 1, 
-                            tone: letter.toUpperCase() + acc + (Math.floor(targetMidi / 12) - 1)
-                        });
+        function genPool(ki, cf, lvl) {
+            let p=[], ns=['c','d','e','f','g','a','b'], rs=ns.indexOf(ki.dg[0].charAt(0));
+            let rMn = lvl>=7 ? 55 : CR[cf].mn-5;
+            let rMx = lvl>=7 ? 79 : CR[cf].mx+5;
+            for(let o=2; o<=6; o++){
+                for(let l in FD){
+                    let f=FD[l], ls=(rs+f.st)%7, lt=ns[ls], nm={'c':0,'d':2,'e':4,'f':5,'g':7,'a':9,'b':11};
+                    let nMi=(o+1)*12+nm[lt], tg=(o+1)*12+((ki.rt+f.s)%12);
+                    if(tg-nMi>6) tg-=12; else if(nMi-tg>6) tg+=12;
+                    if(tg>=rMn && tg<=rMx){
+                        let d=tg-nMi, a=d===1?'#':(d===2?'##':(d===-1?'b':(d===-2?'bb':'')));
+                        p.push({md:tg, l:l, st:f.st, nn:lt+a, oc:Math.floor(tg/12)-1, tn:lt.toUpperCase()+a+(Math.floor(tg/12)-1)});
                     }
                 }
             }
-            return pool;
+            return p;
         }
 
-        function getValidDiatonicPool(pool, levelId, keyType, anchorMidi) {
-            const diatonicLabelsMaj = ['1', '2', '3', '4', '5', '6', '7']; 
-            const diatonicLabelsMin = ['1', '2', 'b3', '4', '5', 'b6', '7']; 
-            const allowed = keyType === 'maj' ? diatonicLabelsMaj : diatonicLabelsMin;
-            
-            let minOffset = -5, maxOffset = 9; 
-            switch(levelId) {
-                case 1: minOffset = 0; maxOffset = 4; break; 
-                case 2: minOffset = 0; maxOffset = 3; break; 
-                case 3: case 4: minOffset = -2; maxOffset = 5; break; 
-                case 5: minOffset = -2; maxOffset = 9; break; 
-                case 6: minOffset = -2; maxOffset = 8; break; 
+        function gDS(r, k) {
+            if(k==='maj'){ 
+                if(r==='1') return IMj; if(r==='2') return I_Dor; if(r==='3') return I_Phr; 
+                if(r==='4') return I_Lyd; if(r==='5') return Mix; if(r==='6') return IMn; if(r==='7') return Loc; 
+            } else { 
+                if(r==='1') return IMn; if(r==='2') return Loc; if(r==='b3') return IMj; 
+                if(r==='4') return I_Dor; if(r==='5') return I_Phr; if(r==='b6') return I_Lyd; if(r==='b7') return Mix; 
             }
-            
-            return pool.filter(n => {
-                if ((levelId === 1 || levelId === 2) && !['1', '2', '3', 'b3'].includes(n.label)) return false;
-                
-                if (!allowed.includes(n.label)) return false;
-                const diff = n.midi - anchorMidi;
-                return diff >= minOffset && diff <= maxOffset;
+            return IMj;
+        }
+
+        function getValD(p, lvl, t, aM) {
+            let mj=['1','2','3','4','5','6','7'], mn=['1','2','b3','4','5','b6','b7'];
+            return p.filter(n=>{
+                let d=n.md-aM, l=n.l;
+                if(lvl===1) return ['1','2','3'].includes(l)&&d>=0&&d<=4;
+                if(lvl===2) return ['1','2','b3'].includes(l)&&d>=0&&d<=3;
+                if(lvl===3) return (['1','2','3','4'].includes(l)&&d>=0&&d<=5)||(l==='7'&&d===-1);
+                if(lvl===4) return (['1','2','b3','4'].includes(l)&&d>=0&&d<=5)||(l==='b7'&&d===-2);
+                if(lvl===5) return (['1','2','3','4','5','6'].includes(l)&&d>=0&&d<=9)||(l==='7'&&d===-1);
+                if(lvl===6) return (['1','2','b3','4','5','b6'].includes(l)&&d>=0&&d<=8)||(l==='b7'&&d===-2);
+                return (t==='maj'?mj:mn).includes(l)&&d>=-5&&d<=9;
             });
         }
 
-        function generateRhythmsForMeasure(complexity, isStructuralEnd, timeSigConfig) {
-            if (isStructuralEnd) {
-                if (timeSigConfig.measureUnit.includes('_')) {
-                    return { rhythms: timeSigConfig.measureUnit.split('_').map(p => RHYTHMS[p]) };
-                }
-                return { rhythms: [RHYTHMS[timeSigConfig.measureUnit]] };
-            }
-
-            let rhythms = [];
-            let beatsLeft = timeSigConfig.beats;
-            let hasBeatUnit = false;
-
-            while (beatsLeft > 0) {
-                let fuse = false;
-                
-                if (beatsLeft >= 2) {
-                    if (complexity === 'basic') {
-                        if (hasBeatUnit || beatsLeft > 2) fuse = Math.random() > 0.5;
-                    } else if (complexity === 'intermediate') {
-                        fuse = Math.random() > 0.7;
-                    }
-                }
-
-                if (fuse) {
-                    let fusedDur = '';
-                    if (timeSigConfig.type === 'simple') {
-                        if (timeSigConfig.beatUnit === 'q') fusedDur = 'h';
-                        else if (timeSigConfig.beatUnit === '8') fusedDur = 'q';
-                        else if (timeSigConfig.beatUnit === 'h') fusedDur = 'w';
-                        else if (timeSigConfig.beatUnit === '16') fusedDur = '8';
-                    } else {
-                        if (timeSigConfig.beatUnit === 'qd') fusedDur = 'hd';
-                        else if (timeSigConfig.beatUnit === '8d') fusedDur = 'qd';
-                        else if (timeSigConfig.beatUnit === 'hd') fusedDur = 'w.'; 
-                    }
-
-                    if (fusedDur && RHYTHMS[fusedDur]) {
-                        rhythms.push(RHYTHMS[fusedDur]);
-                        beatsLeft -= 2;
-                        continue;
-                    }
-                }
-
-                let beatMotifs = getMotifs(timeSigConfig.beatUnit, timeSigConfig.type, complexity);
-                let motif = beatMotifs[Math.floor(Math.random() * beatMotifs.length)];
-
-                for (let dur of motif) {
-                    rhythms.push(RHYTHMS[dur]);
-                    if (dur === timeSigConfig.beatUnit) hasBeatUnit = true;
-                }
-
-                beatsLeft -= 1;
-            }
-
-            return { rhythms };
-        }
-
-        function shuffle(array) {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex !== 0) {
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-            }
-            return array;
-        }
-
-        function applyMelodicRules(candidates, flatSequence, pool, levelId) {
-            if (flatSequence.length < 1) return { steps: candidates, jumps: [] };
-            let prev = flatSequence[flatSequence.length - 1];
-            let prev2 = flatSequence.length > 1 ? flatSequence[flatSequence.length - 2] : null;
-
-            let steps = [];
-            let jumps = [];
-
-            candidates.forEach(cand => {
-                const stepDiff = Math.abs(cand.step - prev.step);
-                const midiDiff = Math.abs(cand.midi - prev.midi);
-                const dir = Math.sign(cand.midi - prev.midi);
-
-                if (midiDiff === 0) return; 
-                if (stepDiff > 7 || midiDiff === 6 || midiDiff === 3) return; 
-
-                let isValid = true;
-                if (prev2) {
-                    const prevStepDiff = Math.abs(prev.step - prev2.step);
-                    const prevDir = Math.sign(prev.midi - prev2.midi);
-
-                    if (levelId > 2 && prevStepDiff > 2 && dir === prevDir) isValid = false; 
-                }
-
-                if (isValid) {
-                    if (stepDiff <= 2) steps.push(cand);
-                    else jumps.push(cand);
-                }
-            });
-
-            return { steps, jumps };
-        }
-
-        let selectedClef = 'treble';
-        let selectedTimeSig = '4/4';
-
-        const chordDef = (labels, rootLabel, suffix) => ({ labels, rootLabel, suffix });
-
-        function generateExercise(numMeasures, levelId, rhythmComplexity) {
-            if (isPlaying) stopPlayback();
+        function generateExercise() {
+            if(isP) stopPlayback();
             
-            selectedClef = document.getElementById('clef-select').value;
-            selectedTimeSig = document.getElementById('timesig-select').value;
-            const timeSigConfig = METER_CONFIGS[selectedTimeSig];
-
-            const reqType = [1, 3, 5, 7, 9, 11, 13, 15].includes(levelId) ? 'maj' : 'min';
-            const levelKeys = keyData.filter(k => k.type === reqType);
-            currentKeyInfo = levelKeys[Math.floor(Math.random() * levelKeys.length)];
+            let nM = parseInt(document.getElementById('measures-input').value);
+            let lvl = parseInt(document.getElementById('level-select').value);
+            let rC = document.getElementById('rhythm-select').value;
+            let cf = document.getElementById('clef-select').value;
+            let tsV = document.getElementById('timesig-select').value;
+            let tsC = ME[tsV];
+            let rT = [1,3,5,7,9,11,13,15].includes(lvl)?'maj':'min';
             
-            let rawPool = generateChromaticFunctionalPool(currentKeyInfo, selectedClef, levelId);
+            let lKs = KD.filter(k=>k.t===rT); 
+            cK = lKs[Math.floor(Math.random()*lKs.length)];
+            let rP = genPool(cK, cf, lvl);
+            let aM = cK.rt; 
             
-            let anchorMidi = currentKeyInfo.root;
-            while (anchorMidi < CLEF_RANGES[selectedClef].min + 5) anchorMidi += 12;
-            while (anchorMidi > CLEF_RANGES[selectedClef].max - 7) anchorMidi -= 12;
-            baseRootMidi = anchorMidi;
-
-            if (levelId < 11) {
-                rawPool = rawPool.filter(n => {
-                    const diff = n.midi - anchorMidi;
-                    return diff >= -5 && diff <= 9;
-                });
-            }
-
-            let pool = rawPool;
-            let isDiatonicLinear = levelId <= 10 && levelId !== 7 && levelId !== 8;
-
-            if (levelId <= 10) pool = getValidDiatonicPool(rawPool, levelId, reqType, anchorMidi);
+            while(aM < CR[cf].mn+5) aM+=12; 
+            while(aM > CR[cf].mx-7) aM-=12;
             
-            let isCadenceLevel = levelId === 7 || levelId === 8 || levelId >= 11;
-            let measureChords = [];
-            let measureBassMidi = []; 
-            let measureChordMidis = []; 
+            let pool = lvl<7 ? rP.filter(n=>n.md-aM>=-5&&n.md-aM<=9) : rP; 
+            if(lvl<7) pool = getValD(rP, lvl, rT, aM);
+            
+            let isC = lvl>=7;
+            let mCObj = [], mCh = [], mB = [], mCM = [];
+            
+            if(isC) {
+                let chP = [];
+                // MATRIZ DE MARKOV PONDERADA (Schoenberg)
+                let I_c = rT==='maj'? cD(['1','3','5'],'1','',IMj) : cD(['1','b3','5'],'1','m',IMn);
+                let ii_c = rT==='maj'? cD(['2','4','6'],'2','m',I_Dor) : cD(['2','4','b6'],'2','°',Loc);
+                let iii_c = rT==='maj'? cD(['3','5','7'],'3','m',I_Phr) : cD(['b3','5','b7'],'b3','',IMj);
+                let IV_c = rT==='maj'? cD(['4','6','1'],'4','',I_Lyd) : cD(['4','b6','1'],'4','m',I_Dor);
+                let V_c = cD(['5','7','2'],'5','',Mix);
+                let vi_c = rT==='maj'? cD(['6','1','3'],'6','m',IMn) : cD(['b6','1','b3'],'b6','',I_Lyd);
+                let vii_c = rT==='maj'? cD(['7','2','4'],'7','°',Loc) : cD(['7','2','4'],'7','°',DWH);
 
-            if (isCadenceLevel) {
-                let prog;
-                if (levelId === 7 || levelId === 8) {
-                    if (reqType === 'maj') prog = [ chordDef(['1','3','5'],'1',''), chordDef(['4','6','1'],'4',''), chordDef(['5','7','2','4'],'5','7'), chordDef(['1','3','5'],'1','') ];
-                    else prog = [ chordDef(['1','b3','5'],'1','m'), chordDef(['4','b6','1'],'4','m'), chordDef(['5','7','2','4'],'5','7'), chordDef(['1','b3','5'],'1','m') ];
-                } else if (levelId === 11) {
-                    if (reqType === 'maj') {
-                        const opts = [
-                            [chordDef(['1','3','5'],'1',''), chordDef(['7','2','4','5'],'5','7'), chordDef(['1','3','5'],'1','')], 
-                            [chordDef(['1','3','5'],'1',''), chordDef(['2','4','5','7'],'5','7'), chordDef(['1','3','5'],'1','')], 
-                            [chordDef(['1','3','5'],'1',''), chordDef(['4','5','7','2'],'5','7'), chordDef(['3','5','1'],'1','')]  
-                        ];
-                        prog = opts[Math.floor(Math.random() * opts.length)];
+                let cPool = [I_c, IV_c, V_c];
+                if (lvl >= 9) cPool.push(ii_c, iii_c, vi_c, vii_c);
+                if (lvl === 11) {
+                    cPool.push(cD(['5','7','2','4'],'5','7',Mix)); 
+                } else if (lvl === 12) {
+                    cPool.push(rT==='maj' ? cD(['7','2','4','6'],'7','ø7',Loc) : cD(['7','2','4','b6'],'7','°7',DWH));
+                } else if (lvl === 13) {
+                    cPool.push(ii_c, iii_c, vi_c);
+                    if(rT==='maj') {
+                        cPool.push(cD(['6','#1','3','5'],'6','7',Mix_b6)); cPool.push(cD(['7','#2','#4','6'],'7','7',Mix_b2_b6)); cPool.push(cD(['1','3','5','b7'],'1','7',Mix)); cPool.push(cD(['2','#4','6','1'],'2','7',Mix)); cPool.push(cD(['3','#5','7','2'],'3','7',Mix_b2_b6));
                     } else {
-                        const opts = [
-                            [chordDef(['1','b3','5'],'1','m'), chordDef(['7','2','4','5'],'5','7'), chordDef(['1','b3','5'],'1','m')], 
-                            [chordDef(['1','b3','5'],'1','m'), chordDef(['2','4','5','7'],'5','7'), chordDef(['1','b3','5'],'1','m')], 
-                            [chordDef(['1','b3','5'],'1','m'), chordDef(['4','5','7','2'],'5','7'), chordDef(['b3','5','1'],'1','m')]  
-                        ];
-                        prog = opts[Math.floor(Math.random() * opts.length)];
+                        cPool.push(cD(['1','3','5','b7'],'1','7',Mix_b2_b6)); cPool.push(cD(['2','#4','6','1'],'2','7',Mix_b6)); cPool.push(cD(['b3','5','b7','2'],'b3','7',Mix)); cPool.push(cD(['4','6','1','b3'],'4','7',Mix));
                     }
-                } else if (levelId === 12) {
-                    if (reqType === 'maj') prog = [ chordDef(['1','3','5'],'1',''), chordDef(['7','2','4', '6'],'7','ø7'), chordDef(['1','3','5'],'1','') ];
-                    else prog = [ chordDef(['1','b3','5'],'1','m'), chordDef(['7','2','4', 'b6'],'7','°7'), chordDef(['1','b3','5'],'1','m') ];
-                } else if (levelId === 13) {
-                    if (reqType === 'maj') {
-                        const opts = [
-                            [chordDef(['1','3','5'],'1',''), chordDef(['6','#1','3','5'],'6','7'), chordDef(['2','4','6'],'2','m'), chordDef(['5','7','2'],'5','')], 
-                            [chordDef(['1','3','5'],'1',''), chordDef(['2','#4','6','1'],'2','7'), chordDef(['5','7','2'],'5',''), chordDef(['1','3','5'],'1','')]  
-                        ];
-                        prog = opts[Math.floor(Math.random() * opts.length)];
+                } else if (lvl === 14) {
+                    cPool.push(ii_c, iii_c, vi_c);
+                    if(rT==='maj') {
+                        cPool.push(cD(['#1','3','5','b7'],'#1','°7',DWH)); cPool.push(cD(['#2','#4','6','1'],'#2','°7',DWH)); cPool.push(cD(['3','5','b7','b2'],'3','°7',DWH)); cPool.push(cD(['#4','6','1','b3'],'#4','°7',DWH)); cPool.push(cD(['#5','7','2','4'],'#5','°7',DWH));
                     } else {
-                        const opts = [
-                            [chordDef(['1','b3','5'],'1','m'), chordDef(['1','3','5','b7'],'1','7'), chordDef(['4','b6','1'],'4','m'), chordDef(['5','7','2'],'5','')], 
-                            [chordDef(['1','b3','5'],'1','m'), chordDef(['2','#4','6','1'],'2','7'), chordDef(['5','7','2'],'5',''), chordDef(['1','b3','5'],'1','m')]  
-                        ];
-                        prog = opts[Math.floor(Math.random() * opts.length)];
+                        cPool.push(cD(['2','4','b6','7'],'2','°7',DWH)); cPool.push(cD(['3','5','b7','b2'],'3','°7',DWH)); cPool.push(cD(['#4','6','1','b3'],'#4','°7',DWH)); cPool.push(cD(['5','b7','b2','3'],'5','°7',DWH)); cPool.push(cD(['#6','#1','3','5'],'#6','°7',DWH));
                     }
-                } else if (levelId === 14) {
-                    if (reqType === 'maj') {
-                        const opts = [
-                            [chordDef(['1','3','5'],'1',''), chordDef(['#4','6','1','b3'],'#4','°7'), chordDef(['5','7','2'],'5',''), chordDef(['1','3','5'],'1','')], 
-                            [chordDef(['1','3','5'],'1',''), chordDef(['#5','7','2','4'],'#5','°7'), chordDef(['6','1','3'],'6','m'), chordDef(['5','7','2'],'5','')] 
-                        ];
-                        prog = opts[Math.floor(Math.random() * opts.length)];
-                    } else {
-                        const opts = [
-                            [chordDef(['1','b3','5'],'1','m'), chordDef(['#4','6','1','b3'],'#4','°7'), chordDef(['5','7','2'],'5',''), chordDef(['1','b3','5'],'1','m')], 
-                            [chordDef(['1','b3','5'],'1','m'), chordDef(['7','2','4','b6'],'7','°7'), chordDef(['1','b3','5'],'1','m'), chordDef(['5','7','2'],'5','')] 
-                        ];
-                        prog = opts[Math.floor(Math.random() * opts.length)];
-                    }
-                } else if (levelId === 15) {
-                    if (reqType === 'maj') {
-                        const opts = [
-                            [chordDef(['1','3','5'],'1',''), chordDef(['4','b6','b2'],'b2',''), chordDef(['5','7','2'],'5',''), chordDef(['1','3','5'],'1','')], 
-                            [chordDef(['1','3','5'],'1',''), chordDef(['b6','1','b3','#4'],'b6','7'), chordDef(['5','1','3'],'1',''), chordDef(['5','7','2'],'5','')] 
-                        ];
-                        prog = opts[Math.floor(Math.random() * opts.length)];
-                    } else {
-                        const opts = [
-                            [chordDef(['1','b3','5'],'1','m'), chordDef(['4','b6','b2'],'b2',''), chordDef(['5','7','2'],'5',''), chordDef(['1','b3','5'],'1','m')], 
-                            [chordDef(['1','b3','5'],'1','m'), chordDef(['b6','1','b3','#4'],'b6','7'), chordDef(['5','1','b3'],'1','m'), chordDef(['5','7','2'],'5','')] 
-                        ];
-                        prog = opts[Math.floor(Math.random() * opts.length)];
-                    }
+                } else if (lvl === 15) {
+                    cPool.push(ii_c, vi_c);
+                    cPool.push(cD(['b2','4','b6'],'b2','',L_2)); cPool.push(cD(['b6','1','b3','#4'],'b6','+6',M_4));
                 }
 
-                for (let i = 0; i < numMeasures; i++) {
-                    let cDef = (i === numMeasures - 1) ? (reqType === 'maj' ? chordDef(['1','3','5'],'1','') : chordDef(['1','b3','5'],'1','m')) : prog[i % prog.length];
-                    measureChords.push(cDef.labels);
+                const rootStep = (r) => parseInt(r.replace(/[^1-7]/g, '')) || 1;
+
+                chP[0] = (Math.random() > 0.5) ? I_c : V_c;
+                if(nM > 1) chP[nM - 1] = I_c;
+                if(nM > 2) chP[nM - 2] = (Math.random() > 0.4) ? V_c : IV_c;
+
+                for (let i = 1; i < nM - 2; i++) {
+                    let prevChord = chP[i - 1];
+                    let isEnteringStrong = (i % 2 === 0); // En index 0-based, impar es débil, par es fuerte.
                     
-                    let bassCand = rawPool.find(n => n.label === cDef.labels[0]);
-                    let rootCand = rawPool.find(n => n.label === cDef.rootLabel);
-                    
-                    if (bassCand && rootCand) {
-                        let bMidi = (bassCand.midi % 12) + 36;
-                        if (bMidi < 40) bMidi += 12; 
+                    let candidates = cPool.map(cand => {
+                        let pR = rootStep(prevChord.r);
+                        let cR = rootStep(cand.r);
+                        let dist = (cR - pR + 7) % 7;
+                        let score = 0;
                         
-                        let bLetter = bassCand.noteName.charAt(0).toUpperCase();
-                        let bAcc = bassCand.noteName.substring(1);
-                        let bAnglo = bLetter + bAcc;
-                        let bLatin = LATIN_NAMES[bLetter.toLowerCase()] + (bAcc === 'b' ? 'b' : (bAcc === '#' ? '#' : ''));
+                        let prevIsDim = prevChord.s.includes('°') || prevChord.s.includes('ø');
+                        let candIsDim = cand.s.includes('°') || cand.s.includes('ø');
                         
-                        let rLetter = rootCand.noteName.charAt(0).toUpperCase();
-                        let rAcc = rootCand.noteName.substring(1);
-                        let rAnglo = rLetter + rAcc;
-                        let rLatin = LATIN_NAMES[rLetter.toLowerCase()] + (rAcc === 'b' ? 'b' : (rAcc === '#' ? '#' : ''));
-
-                        let dispA = rAnglo + cDef.suffix + (bAnglo !== rAnglo ? '/' + bAnglo : '');
-                        let dispL = rLatin + cDef.suffix + (bLatin !== rLatin ? '/' + bLatin : '');
-
-                        measureBassMidi.push({ midi: bMidi, displayAnglo: dispA, displayLatin: dispL });
-                    } else {
-                        measureBassMidi.push(null);
-                    }
-
-                    let cMidis = [];
-                    cDef.labels.forEach(lbl => {
-                        let cand = rawPool.find(n => n.label === lbl);
-                        if (cand) {
-                            let m = (cand.midi % 12) + 60; 
-                            cMidis.push(m);
+                        // Guardarraíl: No disminuir sobre disminuido
+                        if (prevIsDim && candIsDim) return { cand, score: 0 };
+                        
+                        // Guardarraíl: Dominante Secundaria -> Resolución obligatoria 4ta ascendente o Deceptiva
+                        if (prevChord.s.includes('7') && prevChord.r !== '5' && prevChord.r !== '7') {
+                            if (dist === 3 || dist === 1) score = 100;
+                            else return { cand, score: 0 };
                         }
-                    });
-                    measureChordMidis.push(cMidis);
-                }
-            }
+                        
+                        // Guardarraíl: Disminuido resuelve 2da ascendente o 4ta
+                        if (prevIsDim) {
+                            if (dist === 1 || dist === 3) score = 100; 
+                            else return { cand, score: 0 };
+                        }
 
-            let midMeasureIndex = numMeasures > 3 ? Math.floor(numMeasures / 2) - 1 : -1;
-            let beatUnitVal = RHYTHMS[timeSigConfig.beatUnit].beats;
-
-            let validExercise = false;
-            let macroAttempt = 0;
-
-            while (!validExercise && macroAttempt < 5) {
-                macroAttempt++;
-                
-                let events = [];
-                let eventCounter = 0;
-                let attacksPerMeasure = [];
-
-                let exerciseRhythms = [];
-                for (let i = 0; i < numMeasures; i++) {
-                    let isStructuralEnd = (i === numMeasures - 1) || (i === midMeasureIndex);
-                    if (levelId === 1 || levelId === 2) isStructuralEnd = (i === numMeasures - 1);
-                    exerciseRhythms.push(generateRhythmsForMeasure(rhythmComplexity, isStructuralEnd, timeSigConfig));
-                }
-
-                if (numMeasures >= 4) {
-                    exerciseRhythms[1] = JSON.parse(JSON.stringify(exerciseRhythms[0])); 
-                    if (numMeasures >= 8) {
-                        exerciseRhythms[4] = JSON.parse(JSON.stringify(exerciseRhythms[0]));
-                        exerciseRhythms[5] = JSON.parse(JSON.stringify(exerciseRhythms[0])); 
-                    }
-                }
-
-                let transposeStep1 = Math.random() > 0.5 ? 1 : -1;
-                let transposeStep2 = Math.random() > 0.5 ? 2 : -2;
-                if (levelId === 1 || levelId === 2) {
-                    transposeStep1 = Math.random() > 0.5 ? 1 : -1;
-                    transposeStep2 = transposeStep1 * -1; 
-                }
-
-                for (let i = 0; i < numMeasures; i++) {
-                    let measureChordsLabels = isCadenceLevel ? measureChords[i] : null;
-                    let currentBeatInMeasure = 0;
-                    let tStep = i === 1 ? transposeStep1 : transposeStep2;
-
-                    attacksPerMeasure.push(exerciseRhythms[i].rhythms.length);
-
-                    for (let j = 0; j < exerciseRhythms[i].rhythms.length; j++) {
-                        const r = exerciseRhythms[i].rhythms[j];
-                        let currentLogicalBeat = currentBeatInMeasure / beatUnitVal;
-                        let isStrongBeat = false;
-                        const eps = 0.01;
-                        if (timeSigConfig.type === 'simple') {
-                            if (timeSigConfig.beats === 4 && (Math.abs(currentLogicalBeat - 0) < eps || Math.abs(currentLogicalBeat - 2) < eps)) isStrongBeat = true;
-                            else if (Math.abs(currentLogicalBeat - 0) < eps) isStrongBeat = true;
+                        // Pesos Schoenberg
+                        if (dist === 3 || dist === 5) { // Movimiento Fuerte
+                            score = isEnteringStrong ? 70 : 30;
+                        } else if (dist === 4 || dist === 2) { // Movimiento Débil
+                            score = isEnteringStrong ? 10 : 60;
+                        } else if (dist === 1 || dist === 6) { // Movimiento Superfuerte
+                            score = 20;
                         } else {
-                            if (Math.abs(currentLogicalBeat % 1) < eps) isStrongBeat = true;
+                            score = 5; // Mismo acorde
                         }
+                        return { cand, score };
+                    }).filter(c => c.score > 0);
 
-                        events.push({
-                            index: eventCounter++,
-                            measureIdx: i,
-                            noteIdx: j,
-                            rhythm: r,
-                            isStrongBeat: isStrongBeat,
-                            isVeryLastNote: (i === numMeasures - 1 && j === exerciseRhythms[i].rhythms.length - 1),
-                            isPenultimateNote: (i === numMeasures - 1 && j === exerciseRhythms[i].rhythms.length - 2),
-                            isMidpointEnd: (i === midMeasureIndex && j === exerciseRhythms[i].rhythms.length - 1) && (levelId > 2),
-                            isSequenceMeasure: (i === 1 || i === 5) && numMeasures >= 4,
-                            sourceOffset: i === 1 ? attacksPerMeasure[0] : (i === 5 ? attacksPerMeasure[4] : 0),
-                            tStep: tStep,
-                            chord: measureChordsLabels
-                        });
-                        currentBeatInMeasure += r.beats;
+                    if (candidates.length === 0) {
+                        chP[i] = I_c; 
+                    } else {
+                        let totalScore = candidates.reduce((sum, c) => sum + c.score, 0);
+                        let roll = Math.random() * totalScore;
+                        let runningSum = 0;
+                        for (let c of candidates) {
+                            runningSum += c.score;
+                            if (roll <= runningSum) {
+                                chP[i] = c.cand;
+                                break;
+                            }
+                        }
                     }
                 }
 
-                let currentIndex = 0;
-                let path = [];
-                let candidateStacks = new Array(events.length).fill(null);
-                let backtracks = 0;
-                const MAX_BACKTRACKS = 50000;
-
-                const sortByProximity = (cands, targetMidi) => {
-                    return cands.slice().sort((a,b) => Math.abs(a.midi - targetMidi) - Math.abs(b.midi - targetMidi));
-                };
-
-                while (currentIndex >= 0 && currentIndex < events.length && backtracks < MAX_BACKTRACKS) {
-                    let ev = events[currentIndex];
-
-                    if (!candidateStacks[currentIndex]) {
-                        let candidates = [];
-                        let prevPitch = currentIndex > 0 ? path[currentIndex - 1] : null;
+                for(let i=0; i<nM; i++) {
+                    let c = chP[i];
+                    mCObj.push(c); 
+                    mCh.push(c.l);
+                    let bc = rP.find(n=>n.l===c.l[0]);
+                    let rc = rP.find(n=>n.l===c.r);
+                    if(bc && rc){ 
+                        let bm = (bc.md%12)+36; if(bm<40) bm+=12; 
+                        let ba = bc.nn.charAt(0).toUpperCase() + bc.nn.substring(1).toLowerCase();
+                        let ra = rc.nn.charAt(0).toUpperCase() + rc.nn.substring(1).toLowerCase(); 
+                        mB.push({md:bm, d:ra+c.s+(ba!==ra?'/'+ba:'')}); 
+                    } else {
+                        mB.push(null);
+                    }
+                    let ms=[]; 
+                    c.l.forEach(l => {
+                        let t = rP.find(n=>n.l===l);
+                        if(t) ms.push((t.md%12)+60);
+                    }); 
+                    mCM.push(ms);
+                }
+            }
+            
+            let mI = nM>3 ? Math.floor(nM/2)-1 : -1;
+            let vld = false, mac = 0;
+            
+            while(!vld && mac<5) {
+                mac++; 
+                let evs=[], eC=0, exR=[]; 
+                
+                for(let i=0; i<nM; i++) {
+                    exR.push(genRh(rC, (i===nM-1)||(i===mI&&lvl>2), tsC, i, nM));
+                }
+                
+                if(nM>=4) { 
+                    exR[1] = JSON.parse(JSON.stringify(exR[0])); 
+                    if(nM>=8){
+                        exR[4]=JSON.parse(JSON.stringify(exR[0]));
+                        exR[5]=JSON.parse(JSON.stringify(exR[0]));
+                    } 
+                }
+                
+                let tS1 = Math.random()>.5 ? 1 : -1;
+                let tS2 = lvl<3 ? -tS1 : (Math.random()>.5?2:-2);
+                let aPM = [];
+                
+                for(let i=0; i<nM; i++) {
+                    aPM.push(exR[i].rh.length); 
+                    let cB=0, tS=i===1?tS1:tS2;
+                    for(let j=0; j<exR[i].rh.length; j++) {
+                        let r = exR[i].rh[j];
+                        let lb = cB/RHY[tsC.bu].b;
+                        let sb = (tsC.t==='simple' ? (tsC.b===4&&(lb<.01||Math.abs(lb-2)<.01))||lb<.01 : (lb%1)<.01);
                         
-                        let currentBassObj = isCadenceLevel ? measureBassMidi[ev.measureIdx] : null;
-                        let currentBassMidi = currentBassObj ? currentBassObj.midi : null;
-                        let prevEv = currentIndex > 0 ? events[currentIndex - 1] : null;
-                        let prevBassObj = prevEv && isCadenceLevel ? measureBassMidi[prevEv.measureIdx] : null;
-                        let prevBassMidi = prevBassObj ? prevBassObj.midi : null;
+                        evs.push({
+                            i:eC++, m:i, n:j, r:r, sb:sb, 
+                            vl: (i===nM-1 && j===exR[i].rh.length-1),
+                            pn: (i===nM-1 && j===exR[i].rh.length-2),
+                            mE: (i===mI && j===exR[i].rh.length-1) && lvl>2,
+                            sM: (i===1||i===5) && nM>=4,
+                            sO: i===1 ? aPM[0] : (i===5?aPM[4]:0),
+                            tS: tS, 
+                            cO: isC ? mCObj[i] : null
+                        }); 
+                        cB += r.b; 
+                    }
+                }
 
-                        if (ev.isVeryLastNote) {
-                            let tonics = rawPool.filter(n => n.label === '1');
-                            candidates = sortByProximity(tonics, anchorMidi);
-                        } else if (currentIndex === 0) {
-                            let startLabels = (levelId === 1 || levelId === 2) ? ['1', '3'] : ['1','5'];
-                            let startCands = rawPool.filter(n => startLabels.includes(n.label));
-                            candidates = sortByProximity(startCands, anchorMidi);
-                        } else if (ev.isPenultimateNote) {
-                            let penultLabels = (levelId === 1 || levelId === 2) ? ['2'] : ['7','b7','2'];
-                            let penultCands = rawPool.filter(n => penultLabels.includes(n.label));
-                            if (isCadenceLevel) {
-                                let chordMatch = penultCands.filter(n => ev.chord.includes(n.label));
-                                if(chordMatch.length > 0) penultCands = chordMatch;
-                            }
-                            candidates = sortByProximity(penultCands, prevPitch.midi);
-                        } else if (ev.isMidpointEnd && !isCadenceLevel) {
-                            let domCands = rawPool.filter(n => ['5','2','7'].includes(n.label));
-                            candidates = sortByProximity(domCands, prevPitch.midi);
-                        } else if (ev.isSequenceMeasure && path[currentIndex - ev.sourceOffset]) {
-                            
-                            let srcPitch = path[currentIndex - ev.sourceOffset];
-
-                            if (levelId >= 11) {
-                                let cands = rawPool.filter(n => ev.chord.includes(n.label));
+                let cIdx=0, pth=[], stks=new Array(evs.length).fill(null), bk=0;
+                
+                while(cIdx>=0 && cIdx<evs.length && bk<30000) {
+                    let ev = evs[cIdx]; 
+                    if(!stks[cIdx]) {
+                        let cs=[], pp=cIdx>0?pth[cIdx-1]:null;
+                        
+                        if(ev.vl) {
+                            cs = rP.filter(n=>n.l==='1').sort((a,b)=>Math.abs(a.md-aM)-Math.abs(b.md-aM));
+                        } else if(cIdx===0) {
+                            cs = rP.filter(n=>(lvl<3?['1','3']:['1','5']).includes(n.l)).sort((a,b)=>Math.abs(a.md-aM)-Math.abs(b.md-aM));
+                        } else if(ev.pn) {
+                            let pc = rP.filter(n=>(lvl<3?['2']:['7','b7','2']).includes(n.l)); 
+                            if(isC) pc=pc.filter(n=>ev.cO.l.includes(n.l)); 
+                            cs = pc.sort((a,b)=>Math.abs(a.md-pp.md)-Math.abs(b.md-pp.md));
+                        } else if(ev.mE && !isC) {
+                            cs = rP.filter(n=>['5','2','7'].includes(n.l)).sort((a,b)=>Math.abs(a.md-pp.md)-Math.abs(b.md-pp.md));
+                        } else {
+                            let pcC = pool, gt=false; 
+                            if(isC && ev.cO) {
+                                let rtM = rP.find(n=>n.l===ev.cO.r).md;
+                                let awd = ev.cO.iv.map(i=>(rtM+i)%12);
+                                pcC = rP.filter(n=>awd.includes(n.md%12)); 
                                 
-                                if (ev.noteIdx === 0) {
-                                    let approxMidi = srcPitch.midi + (ev.tStep > 0 ? 2 : -2);
-                                    candidates = sortByProximity(cands, approxMidi);
-                                } else {
-                                    let srcPrevPitch = path[currentIndex - ev.sourceOffset - 1];
-                                    let srcDir = Math.sign(srcPitch.midi - srcPrevPitch.midi);
-                                    let dirCands = cands.filter(c => Math.sign(c.midi - prevPitch.midi) === srcDir);
-                                    if (dirCands.length === 0) dirCands = cands; 
-                                    
-                                    let candsWithDist = dirCands.filter(c => Math.abs(c.midi - prevPitch.midi) > 0 && Math.abs(c.midi - prevPitch.midi) <= 12);
-                                    candidates = sortByProximity(candsWithDist.length > 0 ? candsWithDist : cands, prevPitch.midi);
+                                let uPc = [];
+                                let seenP = new Set();
+                                let cTList = ev.cO.l;
+                                for(let cand of pcC) {
+                                    let pval = cand.md % 12;
+                                    if(!seenP.has(pval)) {
+                                        let allP = pcC.filter(x => (x.md%12) === pval);
+                                        let best = allP.find(x => cTList.includes(x.l));
+                                        if(!best) best = allP.reduce((a,b) => a.nn.length <= b.nn.length ? a : b);
+                                        uPc.push(best);
+                                        seenP.add(pval);
+                                    }
+                                }
+                                pcC = uPc;
+
+                                if (lvl === 7 || lvl === 8) {
+                                    pcC = pcC.filter(n => ev.cO.l.includes(n.l));
+                                } else if (ev.sb) {
+                                    let chT = ev.cO.l.map(l=>rP.find(n=>n.l===l).md%12);
+                                    pcC = pcC.filter(n=>{ 
+                                        let m=n.md%12; 
+                                        return chT.includes(m) || !chT.includes((m+11)%12); 
+                                    }); 
                                 }
                             } else {
-                                let targetStep = (srcPitch.step + ev.tStep) % 7;
-                                if (targetStep < 0) targetStep += 7;
-
-                                let cands = pool.filter(n => n.step === targetStep);
+                                let sc = gDS(ev.cO?ev.cO.r:(pp?pp.l:'1'), rT);
+                                let rtM = aM; 
+                                if(ev.cO) rtM=rP.find(n=>n.l===ev.cO.r).md;
+                                let awd = sc.map(i=>(rtM+i)%12); 
+                                pcC = pcC.filter(n=>awd.includes(n.md%12));
                                 
-                                if (levelId === 1 || levelId === 2) {
-                                    cands = cands.filter(n => ['1','2','3','b3'].includes(n.label));
-                                    if (cands.length === 0) cands = pool; 
+                                let uPc = [];
+                                let seenP = new Set();
+                                for(let cand of pcC) {
+                                    let pval = cand.md % 12;
+                                    if(!seenP.has(pval)) {
+                                        let allP = pcC.filter(x => (x.md%12) === pval);
+                                        let best = allP.reduce((a,b) => a.nn.length <= b.nn.length ? a : b);
+                                        uPc.push(best);
+                                        seenP.add(pval);
+                                    }
                                 }
+                                pcC = uPc;
 
-                                let approxMidi = srcPitch.midi + (ev.tStep > 0 ? 2 : -2);
-                                candidates = sortByProximity(cands, approxMidi);
-                                if (candidates.length === 0) candidates = [srcPitch];
+                                if(!isC || lvl===9 || lvl===10) {
+                                    let f=[];
+                                    if(pp.l==='4') f=pcC.filter(n=>['3','b3'].includes(n.l));
+                                    else if(['6','b6'].includes(pp.l)) f=pcC.filter(n=>n.l==='5');
+                                    else if(pp.l==='7') f=pcC.filter(n=>n.l==='1');
+                                    
+                                    let cf=f.filter(n=>Math.abs(n.md-pp.md)<=2); 
+                                    if(cf.length>0){ pcC=cf; gt=true; }
+                                }
+                                if(!gt && ev.sb && (!isC||lvl>8)){
+                                    let ct=pcC.filter(n=>['1','3','b3','5'].includes(n.l));
+                                    if(ct.length>0) pcC=ct;
+                                }
                             }
 
-                        } else {
-                            let cands = pool;
-                            if (isCadenceLevel) cands = rawPool.filter(n => ev.chord.includes(n.label));
-
-                            if (levelId >= 11) {
-                                let candsWithDist = cands.filter(c => Math.abs(c.midi - prevPitch.midi) > 0 && Math.abs(c.midi - prevPitch.midi) <= 12);
-                                let smoothCands = candsWithDist.filter(c => Math.abs(c.midi - prevPitch.midi) <= 4);
-                                let forceConjunct = ev.rhythm.beats < (beatUnitVal * 0.9);
-
-                                if (forceConjunct) {
-                                    let stepCands = candsWithDist.filter(c => Math.abs(c.midi - prevPitch.midi) <= 2);
-                                    if (stepCands.length > 0) smoothCands = stepCands;
-                                }
-
-                                let finalPool = smoothCands.length > 0 ? smoothCands : (candsWithDist.length > 0 ? candsWithDist : cands);
-
-                                if (prevPitch.midi >= 74) {
-                                    let lower = finalPool.filter(c => c.midi < prevPitch.midi);
-                                    if (lower.length > 0) finalPool = lower;
-                                } else if (prevPitch.midi <= 60) {
-                                    let higher = finalPool.filter(c => c.midi > prevPitch.midi);
-                                    if (higher.length > 0) finalPool = higher;
-                                }
-                                candidates = shuffle([...finalPool]); 
-                            } else {
-                                let gravityTriggered = false;
-                                let forcedCandidates = [];
-
-                                if ((!isCadenceLevel || levelId === 9 || levelId === 10)) {
-                                    if (prevPitch.label === '4') forcedCandidates = cands.filter(n => n.label === '3' || n.label === 'b3');
-                                    else if (prevPitch.label === '6' || prevPitch.label === 'b6') forcedCandidates = cands.filter(n => n.label === '5');
-                                    else if (prevPitch.label === '7') forcedCandidates = cands.filter(n => n.label === '1');
+                            let validCands = pcC.filter(c => {
+                                let iv = Math.abs(c.md - pp.md);
+                                let dir = Math.sign(c.md - pp.md);
+                                
+                                if (iv === 0) return false; 
+                                if (iv > 7 || iv === 6) return false; 
+                                
+                                let isFast = ev.r.b < (RHY[tsC.bu].b * 0.9);
+                                if (isFast && iv > 4) return false; 
+                                
+                                if (pth.length > 1) {
+                                    let p2 = pth[pth.length - 2];
+                                    let pIv = Math.abs(pp.md - p2.md);
+                                    let pDir = Math.sign(pp.md - p2.md);
                                     
-                                    if (forcedCandidates.length > 0) {
-                                        let closeForced = forcedCandidates.filter(n => Math.abs(n.midi - prevPitch.midi) <= 2);
-                                        if (closeForced.length > 0) {
-                                            cands = closeForced;
-                                            gravityTriggered = true;
-                                        }
-                                    }
-                                }
-
-                                if (!gravityTriggered && ev.isStrongBeat && (!isCadenceLevel || levelId === 9 || levelId === 10)) {
-                                    let chordTones = cands.filter(n => ['1', '3', 'b3', '5'].includes(n.label));
-                                    if (chordTones.length > 0) cands = chordTones;
-                                }
-
-                                let rules = applyMelodicRules(cands, path, rawPool, levelId);
-                                let valid = [];
-                                let forceConjunct = ev.rhythm.beats < (beatUnitVal * 0.9);
-
-                                if (gravityTriggered) {
-                                    valid = cands; 
-                                } else if (forceConjunct && rules.steps.length > 0) {
-                                    valid = rules.steps; 
-                                } else {
-                                    valid = rules.steps.concat(rules.jumps);
-                                }
-
-                                if (valid.length > 0 && !gravityTriggered) {
-                                    if (prevPitch.midi > 72) {
-                                        let lowerCands = valid.filter(c => c.midi < prevPitch.midi);
-                                        if (lowerCands.length > 0) valid = lowerCands;
-                                    } else if (prevPitch.midi < 60) {
-                                        let higherCands = valid.filter(c => c.midi > prevPitch.midi);
-                                        if (higherCands.length > 0) valid = higherCands;
-                                    }
-                                }
-
-                                if (valid.length > 0) {
-                                    let noRepeat = valid.filter(n => n.midi !== prevPitch.midi);
-                                    if (levelId === 1 || levelId === 2) {
-                                        candidates = shuffle([...valid]);
-                                    } else {
-                                        candidates = noRepeat.length > 0 ? shuffle([...noRepeat]) : shuffle([...valid]);
-                                    }
-                                } else {
-                                    let safeBase = cands.filter(n => n.midi !== prevPitch.midi);
-                                    if (levelId === 1 || levelId === 2) safeBase = cands; 
-                                    candidates = sortByProximity(safeBase.length > 0 ? safeBase : cands, prevPitch.midi);
-                                }
-                            }
-                        }
-
-                        if (isCadenceLevel && candidates.length > 1) {
-                            candidates = candidates.filter(cand => {
-                                if (prevPitch && currentBassMidi && prevBassMidi && currentBassMidi !== prevBassMidi && prevPitch.midi !== cand.midi) {
-                                    let bassDir = Math.sign(currentBassMidi - prevBassMidi);
-                                    let melDir = Math.sign(cand.midi - prevPitch.midi);
-                                    
-                                    if (bassDir === melDir) {
-                                        let interval = Math.abs(cand.midi - currentBassMidi) % 12;
-                                        if (interval === 0 || interval === 7) return false; 
+                                    if (pIv >= 4) {
+                                        if (dir === pDir) return false; 
+                                        if (iv > 2) return false; 
+                                    } else if (pIv >= 3) {
+                                        if (dir === pDir && iv >= 3) return false; 
                                     }
                                 }
                                 return true;
                             });
-                        }
-                        
-                        if (candidates.length === 0 && prevPitch) candidates = [prevPitch]; 
 
-                        if (currentIndex < events.length - 1 && candidates.length > 1) {
-                            let nextEv = events[currentIndex + 1];
-                            let nextCands = pool;
-                            if (isCadenceLevel && nextEv.chord) {
-                                nextCands = rawPool.filter(n => nextEv.chord.includes(n.label));
-                            }
+                            let edgeMax = CR[cf].mx - 2;
+                            let edgeMin = CR[cf].mn + 2;
+                            if (pp.md > edgeMax) validCands = validCands.filter(c => c.md < pp.md);
+                            if (pp.md < edgeMin) validCands = validCands.filter(c => c.md > pp.md);
 
-                            let survivingCandidates = candidates.filter(cand => {
-                                if (levelId >= 11) {
-                                    return nextCands.some(nCand => Math.abs(nCand.midi - cand.midi) <= 7);
-                                } else {
-                                    let mockRules = applyMelodicRules(nextCands, [...path, cand], rawPool, levelId);
-                                    return (mockRules.steps.length > 0 || mockRules.jumps.length > 0);
-                                }
+                            cs = validCands.sort((a, b) => {
+                                let ivA = Math.abs(a.md - pp.md);
+                                let ivB = Math.abs(b.md - pp.md);
+                                let pA = ivA > 2 ? ivA*2 : ivA;
+                                let pB = ivB > 2 ? ivB*2 : ivB;
+                                return (pA - pB) + (Math.random() * 1.5 - 0.75);
                             });
-                            
-                            if (survivingCandidates.length > 0) {
-                                candidates = survivingCandidates;
-                            }
                         }
-                        
-                        candidateStacks[currentIndex] = candidates;
+                        if(cs.length===0 && pp) cs=[pp]; 
+                        stks[cIdx]=cs;
                     }
-
-                    let cands = candidateStacks[currentIndex];
-
-                    if (cands && cands.length > 0) {
-                        let chosen = cands.shift();
-                        path.push(chosen);
-                        currentIndex++;
+                    
+                    if(stks[cIdx] && stks[cIdx].length>0) {
+                        pth.push(stks[cIdx].shift());
+                        cIdx++;
                     } else {
-                        candidateStacks[currentIndex] = null;
-                        path.pop();
-                        currentIndex--;
-                        backtracks++;
+                        stks[cIdx]=null;
+                        pth.pop();
+                        cIdx--;
+                        bk++;
                     }
                 }
-
-                if (currentIndex === events.length) {
-                    let maxMidiInExercise = -1;
-                    let maxMidiCount = 0;
-                    for (let p of path) {
-                        if (p.midi > maxMidiInExercise) { maxMidiInExercise = p.midi; maxMidiCount = 1; }
-                        else if (p.midi === maxMidiInExercise) { maxMidiCount++; }
-                    }
-
-                    if (maxMidiCount <= 2 || macroAttempt >= 4) {
-                        validExercise = true;
-                        exerciseData = [];
-                        let pathIdx = 0;
-                        for (let i = 0; i < numMeasures; i++) {
-                            let measureNotes = [];
-                            for (let j = 0; j < exerciseRhythms[i].rhythms.length; j++) {
-                                measureNotes.push({ rhythm: exerciseRhythms[i].rhythms[j], pitchInfo: path[pathIdx++] });
-                            }
-                            exerciseData.push({ 
-                                notes: measureNotes, 
-                                bass: isCadenceLevel ? measureBassMidi[i] : null,
-                                chordMidis: isCadenceLevel ? measureChordMidis[i] : null
-                            });
+                
+                if(cIdx===evs.length) {
+                    vld=true; 
+                    exD=[]; 
+                    let pI=0;
+                    for(let i=0; i<nM; i++) { 
+                        let mN=[]; 
+                        for(let j=0; j<exR[i].rh.length; j++){
+                            mN.push({r:exR[i].rh[j], p:pth[pI++]});
+                        } 
+                        
+                        let rootMidi = null;
+                        if(isC && mCObj[i]) {
+                            let rc = rP.find(n => n.l === mCObj[i].r);
+                            if(rc) rootMidi = rc.md;
                         }
+                        
+                        exD.push({n:mN, b:isC?mB[i]:null, cm:isC?mCM[i]:null, rtM: rootMidi}); 
                     }
                 }
             }
-
-            if (!validExercise) {
-                document.getElementById('status-display').innerHTML = `<span class="text-red-600 font-bold">Error del Motor: Resolutor CSP falló al eludir saltos rotos o quintas paralelas.</span>`;
+            
+            if(!vld) {
+                document.getElementById('status-display').innerHTML=`<span class="text-red-600 font-bold">Error CSP. Baje complejidad.</span>`;
             } else {
-                document.getElementById('btn-save-fav').disabled = false;
-                startStudyTimer();
+                document.getElementById('btn-save-fav').disabled=false; 
+                sT();
+                document.getElementById('status-display').classList.remove('hidden');
+                document.getElementById('status-display').innerHTML=`<strong>${cK.n}</strong> | Clave: ${document.getElementById('clef-select').options[document.getElementById('clef-select').selectedIndex].text} | Compás: ${document.getElementById('timesig-select').value}`;
+                dSR();
+                document.getElementById('btn-play').disabled=false;
             }
         }
 
-        function drawScoreResponsive() {
-            const container = document.getElementById("score-container");
-            container.innerHTML = ""; 
-
-            if (exerciseData.length === 0) return;
-
-            const notenameFormat = document.getElementById('notename-select').value;
-            const showDegrees = document.getElementById('cb-degrees').checked;
-            const timeSigConfig = METER_CONFIGS[selectedTimeSig];
-            const rhythmComplexity = document.getElementById('rhythm-select').value;
-
-            const wWidth = window.innerWidth;
-            
-            // PAGINACIÓN INTELIGENTE (Soluciona el amontonamiento visual de ritmos rápidos)
-            let measuresPerLine = 4;
-            if (wWidth < 768) measuresPerLine = 1;      
-            else if (wWidth < 1024) measuresPerLine = 2; 
-
-            if (rhythmComplexity === 'advanced' && measuresPerLine > 2) measuresPerLine = 2;
-            if (rhythmComplexity === 'intermediate' && measuresPerLine > 3) measuresPerLine = 3;
-
-            const totalMeasures = exerciseData.length;
-            const lines = Math.ceil(totalMeasures / measuresPerLine);
-
-            // TECHO SEGURO: Aumento estricto de altura para impedir decapitación de acordes
-            const canvasHeight = (notenameFormat !== 'none' || showDegrees) ? 200 : 170;
-            const staveWidth = Math.max(280, (container.clientWidth - 40) / measuresPerLine);
-
-            let globalNoteIndex = 0;
-
-            for (let l = 0; l < lines; l++) {
-                const lineDiv = document.createElement("div");
-                lineDiv.className = "system-line";
-                container.appendChild(lineDiv);
-
-                const measuresInThisLine = Math.min(measuresPerLine, totalMeasures - (l * measuresPerLine));
-                
-                let lineTotalWidth = 20; 
-                for (let m = 0; m < measuresInThisLine; m++) {
-                    lineTotalWidth += staveWidth + (m === 0 && l === 0 ? 50 : 0);
-                }
-
-                const renderer = new VF.Renderer(lineDiv, VF.Renderer.Backends.SVG);
-                renderer.resize(lineTotalWidth, canvasHeight);
-                const context = renderer.getContext();
-
-                let startX = 10;
-                let measureAccidentals = {}; 
-
-                for (let m = 0; m < measuresInThisLine; m++) {
-                    const measureIndex = (l * measuresPerLine) + m;
-                    const measure = exerciseData[measureIndex];
-                    
-                    const actualStaveWidth = staveWidth + (m === 0 && l === 0 ? 50 : 0);
-                    
-                    // Empuje físico del pentagrama a Y=40 para darle espacio libre superior
-                    const stave = new VF.Stave(startX, 40, actualStaveWidth);
-                    
-                    if (m === 0 && l === 0) {
-                        stave.addClef(selectedClef).addKeySignature(currentKeyInfo.vfKey).addTimeSignature(selectedTimeSig);
-                    }
-                    if (measureIndex === totalMeasures - 1) {
-                        stave.setEndBarType(VF.Barline.type.END);
-                    }
-                    stave.setContext(context).draw();
-
-                    measureAccidentals = {}; 
-
-                    const vexNotes = measure.notes.map((n, j) => {
-                        const vfNoteString = `${n.pitchInfo.noteName.charAt(0)}${n.pitchInfo.noteName.substring(1)}/${n.pitchInfo.octave}`;
-                        const note = new VF.StaveNote({ clef: selectedClef, keys: [vfNoteString], duration: n.rhythm.duration });
-                        
-                        if (n.rhythm.isDot) note.addDot(0);
-
-                        const noteAcc = n.pitchInfo.noteName.substring(1);
-                        const noteLetter = n.pitchInfo.noteName.charAt(0);
-                        const keyAcc = currentKeyInfo.accidentals[noteLetter] || '';
-                        const currentActiveAcc = measureAccidentals[noteLetter] !== undefined ? measureAccidentals[noteLetter] : keyAcc;
-                        
-                        if (noteAcc !== currentActiveAcc) {
-                            const vfAcc = noteAcc === '' ? 'n' : noteAcc;
-                            note.addAccidental(0, new VF.Accidental(vfAcc));
-                            measureAccidentals[noteLetter] = noteAcc;
-                        }
-
-                        // INYECCIÓN ORTODOXA Y SEGURA DE TEXTO SUPERIOR (No colapsa la API de VexFlow)
-                        if (j === 0 && measure.bass) {
-                            let cifradoAnnotation = new VF.Annotation(measure.bass.displayAnglo);
-                            cifradoAnnotation.setFont("sans-serif", 14, "bold");
-                            cifradoAnnotation.setVerticalJustification(VF.Annotation.VerticalJustify.TOP);
-                            note.addAnnotation(0, cifradoAnnotation);
-                        }
-
-                        let annotations = [];
-                        if (notenameFormat === 'anglo') annotations.push(n.pitchInfo.noteName.toUpperCase());
-                        else if (notenameFormat === 'latin') annotations.push(LATIN_NAMES[noteLetter] + (noteAcc === 'b' ? 'b' : (noteAcc === '#' ? '#' : '')));
-
-                        if (showDegrees) annotations.push(n.pitchInfo.label);
-
-                        if (annotations.length > 0) {
-                            let bottomAnnotation = new VF.Annotation(annotations.join('\n'));
-                            bottomAnnotation.setFont("sans-serif", 10, "bold");
-                            bottomAnnotation.setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM);
-                            note.addAnnotation(0, bottomAnnotation);
-                        }
-
-                        note.setAttribute('id', `vf-note-${globalNoteIndex++}`);
-                        return note;
-                    });
-
-                    let beamGrouping = [];
-                    if (timeSigConfig.type === 'compound') {
-                        beamGrouping = [new VF.Fraction(3, 8)];
-                    } else {
-                        beamGrouping = [new VF.Fraction(1, timeSigConfig.denom)]; 
-                    }
-                    const vfBeams = VF.Beam.generateBeams(vexNotes, { groups: beamGrouping });
-
-                    const voice = new VF.Voice({ num_beats: METER_CONFIGS[selectedTimeSig].beats, beat_value: METER_CONFIGS[selectedTimeSig].type === 'simple' ? 4 : 8 });
-                    voice.setStrict(false).addTickables(vexNotes);
-                    
-                    const formatWidth = actualStaveWidth - (m === 0 && l === 0 ? 80 : 20);
-                    new VF.Formatter().joinVoices([voice]).format([voice], formatWidth);
-                    
-                    voice.draw(context, stave);
-                    vfBeams.forEach(b => b.setContext(context).draw()); 
-
-                    startX += actualStaveWidth;
-                }
-            }
-        }
-
-        window.addEventListener('resize', () => {
-            if (exerciseData.length > 0 && !isPlaying) drawScoreResponsive();
-        });
-
-        async function exportToJPEG() {
-            if (exerciseData.length === 0) return alert("Genera un ejercicio primero.");
-            const svgs = Array.from(document.querySelectorAll('#score-container svg'));
-            if (svgs.length === 0) return;
-
-            const btn = document.querySelector('[title="Descargar Imagen JPEG [J]"]');
-            const originalText = btn.innerText;
-            btn.innerText = 'Renderizando...';
-            btn.disabled = true;
-
-            try {
-                let totalHeight = 0;
-                let maxWidth = 0;
-                const svgData = svgs.map(svg => {
-                    const w = parseFloat(svg.getAttribute('width')) || svg.clientWidth;
-                    const h = parseFloat(svg.getAttribute('height')) || svg.clientHeight;
-                    totalHeight += h;
-                    if (w > maxWidth) maxWidth = w;
-                    
-                    let htmlStr = new XMLSerializer().serializeToString(svg);
-                    if (!htmlStr.match(/^<svg[^>]* width="/)) {
-                        htmlStr = htmlStr.replace('<svg', `<svg width="${w}" height="${h}"`);
-                    }
-                    
-                    return { html: htmlStr, width: w, height: h };
-                });
-
-                const canvas = document.createElement('canvas');
-                canvas.width = maxWidth + 40; 
-                canvas.height = totalHeight + (svgs.length * 20) + 40;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                let currentY = 20;
-                for (const data of svgData) {
-                    const img = new Image();
-                    const svgBlob = new Blob([data.html], {type: 'image/svg+xml;charset=utf-8'});
-                    const url = URL.createObjectURL(svgBlob);
-                    
-                    await new Promise((resolve, reject) => {
-                        img.onload = () => {
-                            const offsetX = (canvas.width - data.width) / 2;
-                            ctx.drawImage(img, offsetX, currentY, data.width, data.height);
-                            currentY += data.height + 20;
-                            URL.revokeObjectURL(url);
-                            resolve();
-                        };
-                        img.onerror = reject;
-                        img.src = url;
-                    });
-                }
-
-                const link = document.createElement('a');
-                link.download = `Arte_del_Solfeo_${currentKeyInfo.name.replace(/ /g, '_')}_${Date.now()}.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 1.0);
-                link.click();
-            } catch (err) {
-                console.error("Error exportando JPEG:", err);
-                alert("Ocurrió un error al generar la imagen.");
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-        }
-
-        function exportToMusicXML() {
-            if (exerciseData.length === 0) return alert("Genera un ejercicio primero.");
-
-            const durationMap = {
-                'w': { type: 'whole', div: 16 },
-                'w.': { type: 'whole', div: 24, dot: true },
-                'h': { type: 'half', div: 8 },
-                'hd': { type: 'half', div: 12, dot: true },
-                'h.': { type: 'half', div: 12, dot: true },
-                'q': { type: 'quarter', div: 4 },
-                'qd': { type: 'quarter', div: 6, dot: true },
-                '8': { type: 'eighth', div: 2 },
-                '8d': { type: 'eighth', div: 3, dot: true },
-                '16': { type: '16th', div: 1 },
-                '16d': { type: '16th', div: 1.5, dot: true },
-                '32': { type: '32nd', div: 0.5 },
-                '64': { type: '64th', div: 0.25 }
-            };
-
-            const ts = selectedTimeSig.split('/');
-            const beats = ts[0];
-            const beatType = ts[1];
-            
-            const getAlter = (acc) => {
-                if (acc === '#') return '1';
-                if (acc === '##') return '2';
-                if (acc === 'b') return '-1';
-                if (acc === 'bb') return '-2';
-                return '0';
-            };
-
-            let xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
-<score-partwise version="3.1">
-  <work>
-    <work-title>Arte del Solfeo Ejercicio</work-title>
-  </work>
-  <part-list>
-    <score-part id="P1">
-      <part-name>Voz</part-name>
-    </score-part>
-  </part-list>
-  <part id="P1">`;
-
-            exerciseData.forEach((measure, idx) => {
-                xml += `\n    <measure number="${idx + 1}">`;
-                
-                if (idx === 0) {
-                    let clefSign = 'G', clefLine = '2';
-                    if (selectedClef === 'bass') { clefSign = 'F'; clefLine = '4'; }
-                    else if (selectedClef === 'alto') { clefSign = 'C'; clefLine = '3'; }
-                    else if (selectedClef === 'tenor') { clefSign = 'C'; clefLine = '4'; }
-                    else if (selectedClef === 'soprano') { clefSign = 'C'; clefLine = '1'; }
-
-                    xml += `
-      <attributes>
-        <divisions>4</divisions>
-        <key>
-          <fifths>${currentKeyInfo.fifths || 0}</fifths>
-          <mode>${currentKeyInfo.type === 'min' ? 'minor' : 'major'}</mode>
-        </key>
-        <time>
-          <beats>${beats}</beats>
-          <beat-type>${beatType}</beat-type>
-        </time>
-        <clef>
-          <sign>${clefSign}</sign>
-          <line>${clefLine}</line>
-        </clef>
-      </attributes>`;
-                }
-
-                measure.notes.forEach(n => {
-                    const step = n.pitchInfo.noteName.charAt(0).toUpperCase();
-                    const acc = n.pitchInfo.noteName.substring(1);
-                    const alter = getAlter(acc);
-                    const oct = n.pitchInfo.octave;
-                    const durInfo = durationMap[n.rhythm.duration] || { type: 'quarter', div: 4 };
-
-                    xml += `
-      <note>
-        <pitch>
-          <step>${step}</step>`;
-                    if (alter !== '0') xml += `\n          <alter>${alter}</alter>`;
-                    xml += `\n          <octave>${oct}</octave>
-        </pitch>
-        <duration>${durInfo.div}</duration>
-        <type>${durInfo.type}</type>`;
-                    if (durInfo.dot) xml += `\n        <dot/>`;
-                    if (alter !== '0' && acc !== '') {
-                        let xmlAcc = 'natural';
-                        if(acc==='#') xmlAcc = 'sharp';
-                        if(acc==='b') xmlAcc = 'flat';
-                        xml += `\n        <accidental>${xmlAcc}</accidental>`;
-                    }
-                    xml += `\n      </note>`;
-                });
-                
-                if (idx === exerciseData.length - 1) {
-                    xml += `\n      <barline location="right"><bar-style>light-heavy</bar-style></barline>`;
-                }
-                
-                xml += `\n    </measure>`;
+        // Delegación de renderizado asíncrono para inyección nativa SVG
+        async function injectSvgText(svgNode, dataList, yBase) {
+            dataList.forEach(item => {
+                let currentY = yBase;
+                const drawText = (txt) => {
+                    let textNode = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    textNode.setAttribute("x", item.x);
+                    textNode.setAttribute("y", currentY);
+                    textNode.setAttribute("font-family", "sans-serif");
+                    textNode.setAttribute("font-size", "12px");
+                    textNode.setAttribute("font-weight", "bold");
+                    textNode.setAttribute("text-anchor", "middle"); 
+                    textNode.setAttribute("fill", "#0f172a");
+                    textNode.textContent = txt;
+                    svgNode.appendChild(textNode);
+                    currentY += 15; 
+                };
+                if(item.n) drawText(item.n);
+                if(item.t) drawText(item.t);
+                if(item.c) drawText(item.c);
             });
-
-            xml += `\n  </part>\n</score-partwise>`;
-
-            const blob = new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Arte_del_Solfeo_${currentKeyInfo.name.replace(' ', '_')}_${Date.now()}.musicxml`;
-            link.click();
-            URL.revokeObjectURL(link.href);
         }
 
-        function highlightNoteAndScroll(index) {
-            const allNotes = document.querySelectorAll('.vf-stavenote');
-            allNotes.forEach(el => el.classList.remove('vf-note-highlighted'));
-            if (allNotes[index]) {
-                const activeNoteEl = allNotes[index];
-                activeNoteEl.classList.add('vf-note-highlighted');
-                activeNoteEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        function dSR() {
+            const cont = document.getElementById("score-container"); 
+            cont.innerHTML=""; 
+            if(exD.length===0) return;
+            
+            const tsC = ME[document.getElementById('timesig-select').value];
+            const cw = cont.clientWidth;
+            
+            let tsParts = document.getElementById('timesig-select').value.split('/');
+            let vNumB = parseInt(tsParts[0]), vDenB = parseInt(tsParts[1]);
+
+            let mPL = cw < 600 ? (cw < 400 ? 1 : 2) : 4; 
+            
+            const lns = Math.ceil(exD.length/mPL);
+            const nf = document.getElementById('notename-select').value;
+            const sdTonal = document.getElementById('cb-deg-tonal').checked;
+            const sdChord = document.getElementById('cb-deg-chord').checked;
+            
+            let gIdx = 0;
+            
+            for(let l=0; l<lns; l++){
+                const ld = document.createElement("div"); 
+                ld.className="system-line"; 
+                cont.appendChild(ld);
+                
+                const mIL = Math.min(mPL, exD.length-(l*mPL)); 
+                // LIENZO EXPANSIVO: Elimina la asfixia de 850px para maximizar ancho
+                let mD=[], ltW=20, tw = cw - 40, co=70; 
+                
+                for(let m=0; m<mIL; m++){
+                    const mi=(l*mPL)+m, me=exD[mi]; 
+                    
+                    const vn = me.n.map((n,j)=>{
+                        const nt = new VF.StaveNote({clef:document.getElementById('clef-select').value, keys:[`${n.p.nn.charAt(0)}${n.p.nn.substring(1)}/${n.p.oc}`], duration:n.r.d});
+                        if(n.r.dt) nt.addDot(0); 
+                        
+                        const na = n.p.nn.substring(1), nl = n.p.nn.charAt(0);
+                        if(na !== '') { 
+                            nt.addAccidental(0, new VF.Accidental(na===''?'n':na)); 
+                        }
+                        
+                        if(j===0 && me.b) {
+                            nt.addAnnotation(0, new VF.Annotation(me.b.d).setFont("sans-serif",14,"bold").setVerticalJustification(VF.Annotation.VerticalJustify.TOP));
+                        }
+                        
+                        // Foso Protector: Bloques para obligar a VexFlow a espaciar
+                        nt.addAnnotation(0, new VF.Annotation(" ").setFont("sans-serif", 16).setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM));
+                        nt.addAnnotation(0, new VF.Annotation(" ").setFont("sans-serif", 16).setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM));
+
+                        let txtN = '', txtT = '', txtC = '';
+                        if(nf !== 'none') {
+                            txtN = nf==='anglo' ? nl.toUpperCase() + na.toLowerCase() : LN[nl]+(na==='b'?'b':(na==='#'?'#':''));
+                        }
+                        if(sdTonal) {
+                            txtT = n.p.l;
+                        }
+                        if(sdChord && me.rtM !== null && me.rtM !== undefined) {
+                            let iv = (n.p.md - me.rtM) % 12;
+                            if(iv < 0) iv += 12;
+                            let chDegs = ['1', 'b2', '2', 'b3', '3', '4', '#4', '5', 'b6', '6', 'b7', '7'];
+                            txtC = chDegs[iv] + ']'; 
+                        }
+                        
+                        nt.customData = { n: txtN, t: txtT, c: txtC };
+                        nt.setAttribute('id', `vf-note-${gIdx}`);
+                        if(typeof nt.addClass === 'function') nt.addClass(`vf-note-${gIdx}`);
+                        gIdx++;
+                        return nt;
+                    });
+                    
+                    let bg = tsC.t==='compound' ? [new VF.Fraction(3,tsC.dn)] : (tsC.b===3&&tsC.dn===8?[new VF.Fraction(3,8)]:[new VF.Fraction(1,tsC.dn)]);
+                    const bm = VF.Beam.generateBeams(vn, {groups:bg});
+                    const vc = new VF.Voice({num_beats: vNumB, beat_value: vDenB}).setStrict(false).addTickables(vn);
+                    const fm = new VF.Formatter().joinVoices([vc]); 
+                    fm.preCalculateMinTotalWidth([vc]); 
+                    mD.push({me, vn, vc, bm, fm, mw:fm.getMinTotalWidth(), if:(m===0&&l===0), il:(mi===exD.length-1)});
+                }
+                
+                mD.forEach(d => { d.aw = Math.max(d.mw+(d.if?co+20:30), tw/mIL); ltW+=d.aw; });
+                
+                const rn = new VF.Renderer(ld, VF.Renderer.Backends.SVG); 
+                rn.resize(ltW, 180); 
+                const cx = rn.getContext(); 
+                let sx=10;
+                
+                mD.forEach(d => {
+                    const st = new VF.Stave(sx, 20, d.aw); 
+                    if(d.if) st.addClef(document.getElementById('clef-select').value).addKeySignature(cK.v).addTimeSignature(document.getElementById('timesig-select').value);
+                    if(d.il) st.setEndBarType(VF.Barline.type.END); 
+                    st.setContext(cx).draw();
+                    
+                    d.fm.format([d.vc], d.aw-(d.if?co:20)); 
+                    d.vc.draw(cx, st); 
+                    d.bm.forEach(b=>b.setContext(cx).draw()); 
+
+                    let svgNode = ld.querySelector('svg');
+                    let yBase = st.getYForLine(4) + 35; 
+                    let injectData = [];
+                    
+                    d.vn.forEach(nt => {
+                        injectData.push({
+                            x: nt.getAbsoluteX() + 7,
+                            n: nt.customData.n,
+                            t: nt.customData.t,
+                            c: nt.customData.c
+                        });
+                    });
+                    
+                    injectSvgText(svgNode, injectData, yBase);
+
+                    sx+=d.aw;
+                });
+            }
+
+            if (isP && currentNoteIndex !== -1) {
+                hlN(currentNoteIndex);
+            }
+        }
+
+        window.addEventListener('resize', () => { if(exD.length>0 && !isP) dSR(); });
+
+        function hlN(i) {
+            document.querySelectorAll('.vf-note-highlighted').forEach(e=>e.classList.remove('vf-note-highlighted'));
+            const notes = document.querySelectorAll('.vf-stavenote');
+            if(notes[i]){ 
+                notes[i].classList.add('vf-note-highlighted'); 
+                try{ notes[i].scrollIntoView({behavior:'smooth',block:'center',inline:'center'}); }catch(e){}
             }
         }
 
         function stopPlayback() {
-            isPlaying = false;
-            Tone.Transport.stop();
-            Tone.Transport.position = 0;
-            if (melodyPart) { melodyPart.dispose(); melodyPart = null; }
-            if (metronomePart) { metronomePart.dispose(); metronomePart = null; }
-            if (bassPart) { bassPart.dispose(); bassPart = null; } 
-            if (chordPart) { chordPart.dispose(); chordPart = null; } 
+            isP = false; 
+            currentNoteIndex = -1;
+            Tone.Transport.stop(); 
+            Tone.Transport.position = 0; 
+            if(mP) mP.dispose(); 
+            if(mtP) mtP.dispose(); 
+            if(bP) bP.dispose(); 
+            if(chP) chP.dispose();
             
-            document.querySelectorAll('.vf-stavenote').forEach(el => el.classList.remove('vf-note-highlighted'));
-            document.getElementById('bass-note-display').innerText = '--'; 
+            document.querySelectorAll('.vf-note-highlighted').forEach(e=>e.classList.remove('vf-note-highlighted')); 
+            document.getElementById('bass-note-display').innerText='--';
             
-            const btn = document.getElementById('btn-play');
-            btn.disabled = false;
-            btn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
-            btn.classList.add('bg-red-600', 'hover:bg-red-700');
-            document.getElementById('play-text').innerText = "Comenzar Lectura";
-            document.getElementById('play-icon').innerHTML = '▶';
+            const b = document.getElementById('btn-play'); 
+            b.disabled = false; 
+            b.classList.replace('bg-gray-600','bg-red-600'); 
+            b.classList.replace('hover:bg-gray-700','hover:bg-red-700'); 
+            document.getElementById('play-text').innerText="Comenzar [Space]"; 
+            document.getElementById('play-icon').innerHTML='▶';
+        }
+
+        function updateVolumes() {
+            if(sy) sy.volume.value = document.getElementById('vol-melody').value<=-40 ? -Infinity : document.getElementById('vol-melody').value;
+            if(mSy) mSy.volume.value = document.getElementById('vol-metro').value<=-40 ? -Infinity : document.getElementById('vol-metro').value;
+            if(cP) cP.volume.value = (!document.getElementById('cb-chords').checked || document.getElementById('vol-cadence').value<=-40) ? -Infinity : document.getElementById('vol-cadence').value;
+            if(cB) cB.volume.value = (!document.getElementById('cb-bass').checked || document.getElementById('vol-bass').value<=-40) ? -Infinity : document.getElementById('vol-bass').value;
         }
 
         async function playMelody() {
-            if (Tone.context.state !== 'running') await Tone.start();
+            if(Tone.context.state!=='running') await Tone.start();
+            
+            if(!sy) sy=new Tone.Synth({oscillator:{type:"triangle"},envelope:{attack:.05,decay:.1,sustain:.4,release:1}}).toDestination();
+            if(!cB) cB=new Tone.Synth({oscillator:{type:"fmsine",modulationType:"sine",modulationIndex:3,harmonicity:.5},envelope:{attack:.05,decay:.2,sustain:.4,release:1}}).toDestination();
+            if(!cP) cP=new Tone.PolySynth(Tone.Synth,{oscillator:{type:"triangle"},envelope:{attack:.01,decay:1,sustain:.2,release:1.5}}).toDestination();
+            if(!mSy) mSy=new Tone.MembraneSynth({pitchDecay:.008,octaves:2,envelope:{attack:.001,decay:.2,sustain:0,release:.1}}).toDestination();
 
-            if(!synth) synth = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.4, release: 1 } }).toDestination();
-            if(!cadenceBassSynth) cadenceBassSynth = new Tone.Synth({ oscillator: { type: "fmsine", modulationType: "sine", modulationIndex: 3, harmonicity: 0.5 }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.4, release: 1 } }).toDestination();
-            if(!cadencePianoSynth) cadencePianoSynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 1, sustain: 0.2, release: 1.5 } }).toDestination();
-            if(!metronomeSynth) metronomeSynth = new Tone.MembraneSynth({ pitchDecay: 0.008, octaves: 2, envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 } }).toDestination();
+            updateVolumes();
 
-            const volMelody = document.getElementById('vol-melody').value;
-            const volMetro = document.getElementById('vol-metro').value;
-            const volCadence = document.getElementById('vol-cadence').value;
-            const volBass = document.getElementById('vol-bass').value; 
+            isP = true; 
+            Tone.Transport.bpm.value = parseInt(document.getElementById('tempo-slider').value);
             
-            synth.volume.value = volMelody <= -40 ? -Infinity : volMelody;
-            metronomeSynth.volume.value = volMetro <= -40 ? -Infinity : volMetro;
-            
-            const isBassActive = document.getElementById('cb-bass').checked;
-            const isChordsActive = document.getElementById('cb-chords').checked;
-            
-            cadencePianoSynth.volume.value = (!isChordsActive || volCadence <= -40) ? -Infinity : volCadence;
-            cadenceBassSynth.volume.value = (!isBassActive || volBass <= -40) ? -Infinity : volBass;
-            
-            isPlaying = true;
-            
-            const tempo = parseInt(document.getElementById('tempo-slider').value);
-            const levelId = parseInt(document.getElementById('level-select').value);
-            Tone.Transport.bpm.value = tempo;
-            
-            const btn = document.getElementById('btn-play');
-            btn.classList.remove('bg-red-600', 'hover:bg-red-700');
-            btn.classList.add('bg-gray-600', 'hover:bg-gray-700');
-            document.getElementById('play-text').innerText = "Detener";
-            document.getElementById('play-icon').innerHTML = '■';
-            
-            Tone.Transport.cancel(0); 
+            const b = document.getElementById('btn-play'); 
+            b.classList.replace('bg-red-600','bg-gray-600'); 
+            b.classList.replace('hover:bg-red-700','hover:bg-gray-700'); 
+            document.getElementById('play-text').innerText="Detener"; 
+            document.getElementById('play-icon').innerHTML='■'; 
+            Tone.Transport.cancel(0);
 
-            let timeOffsetInSeconds = 0;
-            const cadenceType = document.getElementById('cadence-select').value;
-            const beatDuration = 60 / tempo;
-            const isCompound = METER_CONFIGS[selectedTimeSig].type === 'compound';
-            
-            let metronomeBeatMultiplier = 1;
-            if (METER_CONFIGS[selectedTimeSig].denom === 2) metronomeBeatMultiplier = 2; 
-            else if (METER_CONFIGS[selectedTimeSig].denom === 8) metronomeBeatMultiplier = 0.5; 
-            else if (METER_CONFIGS[selectedTimeSig].denom === 16) metronomeBeatMultiplier = 0.25;
+            let tO=0, bD = 60/Tone.Transport.bpm.value, tc = ME[document.getElementById('timesig-select').value], isC = tc.t==='compound', bm = (tc.dn===2?2:(tc.dn===8?0.5:(tc.dn===16?0.25:1)));
+            let cI = isC ? (bD*bm*3) : (bD*bm);
+            let cP_val = isC ? (tc.b/3) : tc.b;
 
-            const clickInterval = isCompound ? (beatDuration * metronomeBeatMultiplier * 3) : (beatDuration * metronomeBeatMultiplier); 
-            const clicksPerMeasure = isCompound ? (METER_CONFIGS[selectedTimeSig].beats / 3) : METER_CONFIGS[selectedTimeSig].beats;
-
-            if (cadenceType !== 'none') {
-                const rootMidi = currentKeyInfo.root;
-                const isMinor = currentKeyInfo.type === 'min';
-                let bassRoot = (rootMidi % 12) + 36; if (bassRoot < 40) bassRoot += 12; 
-                let upperRoot = (rootMidi % 12) + 60; if (upperRoot < 64) upperRoot += 12; 
+            if(document.getElementById('cadence-select').value!=='none'){
+                let rm=cK.rt, im=cK.t==='min', br=(rm%12)+36; 
+                if(br<40) br+=12; 
+                let ur=(rm%12)+60; 
+                if(ur<64) ur+=12;
                 
-                const getChordData = (bassOffset, upperOffsets) => ({
-                    bass: Tone.Frequency(bassRoot + bassOffset, "midi").toNote(),
-                    upper: upperOffsets.map(off => Tone.Frequency(upperRoot + off, "midi").toNote())
-                });
-
-                const chordI = getChordData(0, [0, isMinor ? 3 : 4, 7]);
-                const chordIV = getChordData(5, [0, 5, isMinor ? 8 : 9]);
-                const chordV = getChordData(-5, [-1, 2, 5]); 
+                let sq = document.getElementById('cadence-select').value==='IVI' ? 
+                    [{b:br,u:[0,im?3:4,7]},{b:br-5,u:[-1,2,5]},{b:br,u:[0,im?3:4,7]}] : 
+                    [{b:br,u:[0,im?3:4,7]},{b:br+5,u:[0,5,im?8:9]},{b:br-5,u:[-1,2,5]},{b:br,u:[0,im?3:4,7]}];
                 
-                let sequence = [];
-                if (cadenceType === 'IVI') sequence = [chordI, chordV, chordI]; 
-                else if (cadenceType === 'IIVVI') sequence = [chordI, chordIV, chordV, chordI];
-
-                sequence.forEach((chord, idx) => {
-                    Tone.Transport.schedule((t) => {
-                        cadenceBassSynth.triggerAttackRelease(chord.bass, "2n", t);
-                        cadencePianoSynth.triggerAttackRelease(chord.upper, "2n", t);
-                    }, idx * (beatDuration * 2)); 
-                });
-                timeOffsetInSeconds = (sequence.length * beatDuration * 2) + beatDuration;
+                sq.forEach((c,i) => Tone.Transport.schedule((time) => {
+                    cB.triggerAttackRelease(Tone.Frequency(c.b,"midi").toNote(), "2n", time);
+                    cP.triggerAttackRelease(c.u.map(o=>Tone.Frequency(ur+o,"midi").toNote()), "2n", time);
+                }, i*(bD*2))); 
+                tO = (sq.length*bD*2)+bD;
             } else {
-                timeOffsetInSeconds = clicksPerMeasure * clickInterval;
+                tO = cP_val*cI;
             }
 
-            let events = [];
-            let bassEvents = []; 
-            let chordEvents = [];
-            let currentTimeInBeats = 0;
-            let globalIndex = 0;
-            const notenameFormat = document.getElementById('notename-select').value;
-
-            exerciseData.forEach((measure) => {
-                
-                if (measure.bass) {
-                    let timeInSeconds = currentTimeInBeats * beatDuration;
-                    let bassToneObj = Tone.Frequency(measure.bass.midi, "midi");
-                    let bassTone = bassToneObj.toNote();
-                    let measureDurInBeats = measure.notes.reduce((sum, n) => sum + n.rhythm.beats, 0);
-                    
-                    let displayStr = notenameFormat === 'anglo' ? measure.bass.displayAnglo : measure.bass.displayLatin;
-
-                    bassEvents.push({ 
-                        time: timeInSeconds, 
-                        pitch: bassTone, 
-                        dur: measureDurInBeats * beatDuration,
-                        display: displayStr 
-                    });
-
-                    if (levelId >= 11 && measure.chordMidis) {
-                        let chordTones = measure.chordMidis.map(m => Tone.Frequency(m, "midi").toNote());
-                        chordEvents.push({
-                            time: timeInSeconds,
-                            pitch: chordTones,
-                            dur: measureDurInBeats * beatDuration
-                        });
-                    }
+            let ev=[], be=[], ce=[], ct=0, gi=0;
+            
+            exD.forEach((m) => {
+                if(m.b){
+                    let md = m.n.reduce((s,n) => s+n.r.b, 0); 
+                    be.push({time:ct*bD, p:Tone.Frequency(m.b.md,"midi").toNote(), d:md*bD, s:m.b.d}); 
+                    if(m.cm) ce.push({time:ct*bD, p:m.cm.map(v=>Tone.Frequency(v,"midi").toNote()), d:md*bD});
                 }
-
-                measure.notes.forEach((note) => {
-                    const timeInSeconds = currentTimeInBeats * beatDuration;
-                    events.push({ time: timeInSeconds, pitch: note.pitchInfo.tone, dur: note.rhythm.toneDur, idx: globalIndex });
-                    currentTimeInBeats += note.rhythm.beats;
-                    globalIndex++;
+                m.n.forEach(n => {
+                    ev.push({time:ct*bD, p:n.p.tn, d:n.r.td, i:gi}); 
+                    gi++; 
+                    ct+=n.r.b;
                 });
-            });
-
-            const finalTimeInSeconds = currentTimeInBeats * beatDuration;
-            events.push({ time: finalTimeInSeconds, pitch: null, dur: null, idx: -1 });
-
-            const isMetroContinuous = document.getElementById('cb-metro-cont').checked;
-            const limitMetroTime = isMetroContinuous ? (timeOffsetInSeconds + finalTimeInSeconds) : timeOffsetInSeconds;
+            }); 
+            ev.push({time:ct*bD, p:null, d:null, i:-1});
             
-            let metroEvents = [];
-            let tMetro = 0;
-            let clickCount = 0;
-            
-            while (tMetro < limitMetroTime - 0.01) {
-                metroEvents.push({ time: tMetro, isDownbeat: (clickCount % clicksPerMeasure === 0) });
-                tMetro += clickInterval;
-                clickCount++;
+            let me=[], tm=0, cc=0, lm = tO + (ct*bD);
+            while(tm < lm-0.01){
+                me.push({time:tm, id:(cc%cP_val===0)}); 
+                tm+=cI; 
+                cc++;
             }
 
-            if (metronomePart) metronomePart.dispose();
-            metronomePart = new Tone.Part((time, value) => {
-                metronomeSynth.triggerAttackRelease(value.isDownbeat ? "C4" : "C3", "8n", time); 
-            }, metroEvents).start(0);
+            mtP = new Tone.Part((time,v) => {
+                if(time >= tO - 0.05 && !document.getElementById('cb-metro-cont').checked) return;
+                mSy.triggerAttackRelease(v.id?"C4":"C3","8n",time);
+            }, me).start(0);
 
-            if (bassPart) bassPart.dispose();
-            if (bassEvents.length > 0 && isBassActive) {
-                bassPart = new Tone.Part((time, value) => {
-                    cadenceBassSynth.triggerAttackRelease(value.pitch, value.dur, time);
-                    Tone.Draw.schedule(() => {
-                        document.getElementById('bass-note-display').innerText = value.display;
-                    }, time);
-                }, bassEvents).start(timeOffsetInSeconds);
+            if(be.length>0) {
+                bP = new Tone.Part((time,v) => {
+                    cB.triggerAttackRelease(v.p, v.d, time);
+                    Tone.Draw.schedule(()=>document.getElementById('bass-note-display').innerText=v.s, time);
+                }, be).start(tO);
             }
-
-            if (chordPart) chordPart.dispose();
-            if (chordEvents.length > 0 && isChordsActive) { 
-                chordPart = new Tone.Part((time, value) => {
-                    cadencePianoSynth.triggerAttackRelease(value.pitch, value.dur, time);
-                }, chordEvents).start(timeOffsetInSeconds);
+            if(ce.length>0) {
+                chP = new Tone.Part((time,v) => cP.triggerAttackRelease(v.p, v.d, time), ce).start(tO);
             }
-
-            if (melodyPart) melodyPart.dispose();
-            melodyPart = new Tone.Part((time, value) => {
-                if (value.idx === -1) {
-                    Tone.Draw.schedule(() => { 
-                        stopPlayback(); 
-                        exercisesPracticed++;
-                        document.getElementById('session-counter').innerText = exercisesPracticed;
-                    }, time);
+            mP = new Tone.Part((time,v) => {
+                if(v.i===-1){
+                    Tone.Draw.schedule(()=>{stopPlayback(); ePr++; document.getElementById('session-counter').innerText=ePr;}, time);
                 } else {
-                    synth.triggerAttackRelease(value.pitch, value.dur, time);
-                    Tone.Draw.schedule(() => { highlightNoteAndScroll(value.idx); }, time);
+                    sy.triggerAttackRelease(v.p, v.d, time);
+                    Tone.Draw.schedule(()=>{
+                        currentNoteIndex = v.i;
+                        hlN(v.i);
+                    }, time);
                 }
-            }, events).start(timeOffsetInSeconds); 
+            }, ev).start(tO);
             
-            Tone.Transport.stop(); Tone.Transport.position = 0; Tone.Transport.start();
+            Tone.Transport.start();
         }
 
-        document.getElementById('btn-generate').addEventListener('click', () => {
-            const levelId = parseInt(document.getElementById('level-select').value);
-            const rhythmComplexity = document.getElementById('rhythm-select').value;
-            const measures = parseInt(document.getElementById('measures-input').value) || 8;
-            document.getElementById('measures-input').value = Math.min(Math.max(measures, 4), 32);
+        function saveFav() {
+            if (exD.length === 0) return;
+            let fav = {
+                id: Date.now(),
+                title: `${cK.n} - ${document.getElementById('clef-select').options[document.getElementById('clef-select').selectedIndex].text}`,
+                data: exD,
+                key: cK,
+                ts: document.getElementById('timesig-select').value
+            };
+            favs.push(fav);
+            localStorage.setItem('as_favs', JSON.stringify(favs));
+            renderFavs();
+        }
 
-            saveConfigToStorage();
-
-            generateExercise(document.getElementById('measures-input').value, levelId, rhythmComplexity);
-            
-            document.getElementById('status-display').classList.remove('hidden');
-            let clefDesc = document.getElementById('clef-select').options[document.getElementById('clef-select').selectedIndex].text;
-            let timeDesc = document.getElementById('timesig-select').options[document.getElementById('timesig-select').selectedIndex].text;
-            
-            if (exerciseData.length > 0) {
-                document.getElementById('status-display').innerHTML = `<strong>Tonalidad:</strong> ${currentKeyInfo.name} &nbsp;|&nbsp; <strong>Clave:</strong> ${clefDesc} &nbsp;|&nbsp; <strong>Compás:</strong> ${timeDesc}`;
-                drawScoreResponsive();
-                document.getElementById('btn-play').disabled = false;
+        function renderFavs() {
+            const lst = document.getElementById('favorites-list');
+            if (favs.length === 0) { 
+                lst.innerHTML = '<p class="text-sm text-slate-500 italic text-center mt-10">No hay favoritos guardados.</p>'; 
+                return; 
             }
-        });
-
-        document.getElementById('btn-play').addEventListener('click', async () => {
-            if (isPlaying) stopPlayback(); 
-            else playMelody();
-        });
-
-        let debounceTimer;
-        function debouncedGenerate() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                document.getElementById('btn-generate').click();
-            }, 500); 
+            lst.innerHTML = '';
+            favs.forEach(f => {
+                let d = document.createElement('div');
+                d.className = "bg-white p-3 rounded border border-slate-200 shadow-sm flex flex-col gap-2";
+                d.innerHTML = `
+                    <div class="font-bold text-sm text-slate-800">${f.title}</div>
+                    <div class="text-xs text-slate-500">${f.ts} | ${f.data.length} compases</div>
+                    <div class="flex gap-2 mt-1">
+                        <button class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs w-full font-bold hover:bg-blue-200" onclick="loadFav(${f.id})">Cargar</button>
+                        <button class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs w-full font-bold hover:bg-red-200" onclick="delFav(${f.id})">Borrar</button>
+                    </div>`;
+                lst.appendChild(d);
+            });
         }
 
-        document.getElementById('level-select').addEventListener('change', debouncedGenerate);
-        document.getElementById('clef-select').addEventListener('change', debouncedGenerate);
-        document.getElementById('timesig-select').addEventListener('change', debouncedGenerate);
-        document.getElementById('rhythm-select').addEventListener('change', debouncedGenerate);
-
-        window.onload = () => {
-            loadConfigFromStorage();
-            document.getElementById('btn-generate').click();
+        window.loadFav = function(id) {
+            let f = favs.find(x => x.id === id);
+            if (!f) return;
+            if (isP) stopPlayback();
+            exD = f.data;
+            cK = f.key;
+            document.getElementById('timesig-select').value = f.ts;
+            document.getElementById('status-display').innerHTML = `<strong>${cK.n}</strong> | Favorito Cargado | Compás: ${f.ts}`;
+            document.getElementById('status-display').classList.remove('hidden');
+            dSR();
+            document.getElementById('btn-play').disabled = false;
         };
 
+        window.delFav = function(id) {
+            favs = favs.filter(x => x.id !== id);
+            localStorage.setItem('as_favs', JSON.stringify(favs));
+            renderFavs();
+        };
+
+        ['vol-melody', 'vol-metro', 'vol-cadence', 'vol-bass'].forEach(id => document.getElementById(id).addEventListener('input', updateVolumes));
+        ['cb-bass', 'cb-chords'].forEach(id => document.getElementById(id).addEventListener('change', updateVolumes));
+        ['cb-deg-tonal', 'cb-deg-chord', 'notename-select'].forEach(id => document.getElementById(id).addEventListener('change', () => { if(exD.length > 0) dSR(); }));
+
+        document.getElementById('btn-save-fav').addEventListener('click', saveFav);
+
+        document.getElementById('btn-generate').onclick=()=>{ 
+            document.getElementById('measures-input').value = Math.min(Math.max(parseInt(document.getElementById('measures-input').value)||8,4),32); 
+            saveCfg(); 
+            generateExercise(); 
+        };
+        
+        document.getElementById('btn-play').onclick=async()=>{ await Tone.start(); isP?stopPlayback():playMelody(); };
+        
+        ['level-select','clef-select','timesig-select','rhythm-select'].forEach(i => document.getElementById(i).onchange=(e)=>{
+            if(i==='level-select') {
+                const lvl = parseInt(e.target.value);
+                const lblChord = document.getElementById('lbl-deg-chord');
+                if (lvl >= 7) {
+                    lblChord.classList.remove('hidden');
+                } else {
+                    lblChord.classList.add('hidden');
+                    document.getElementById('cb-deg-chord').checked = false;
+                }
+            }
+            document.getElementById('btn-generate').click();
+        });
+        
+        window.addEventListener('keydown', e => {
+            if(e.code==='Space') { e.preventDefault(); document.getElementById('btn-play').click(); }
+            else if(e.code==='KeyG') { e.preventDefault(); document.getElementById('btn-generate').click(); }
+            else if(e.code==='KeyM') { e.preventDefault(); document.getElementById('cb-metro-cont').click(); }
+            else if(e.code==='KeyF') { e.preventDefault(); document.getElementById('btn-save-fav').click(); }
+            else if(e.code==='KeyX') { e.preventDefault(); exportToMusicXML(); }
+            else if(e.code==='KeyJ') { e.preventDefault(); exportToJPEG(); }
+            else if(e.code==='Escape') { document.getElementById('help-modal').close(); document.getElementById('favorites-sidebar').classList.remove('open'); }
+        });
+        
+        window.onload=()=>{ 
+            lCfg(); 
+            
+            let lvl = parseInt(document.getElementById('level-select').value);
+            if(lvl >= 7) document.getElementById('lbl-deg-chord').classList.remove('hidden');
+
+            let storedFavs = localStorage.getItem('as_favs');
+            if (storedFavs) { favs = JSON.parse(storedFavs); renderFavs(); }
+            document.getElementById('btn-generate').click(); 
+        };
+        
+        async function exportToJPEG(){
+            if(exD.length===0) return;
+            const s = Array.from(document.querySelectorAll('#score-container svg'));
+            if(s.length===0) return;
+            
+            const b = document.querySelector('[onclick="exportToJPEG()"]');
+            const o = b.innerText;
+            b.innerText='...';
+            b.disabled=true;
+            
+            try{
+                let th=0, mw=0;
+                const sd = s.map(x=>{
+                    let w=parseFloat(x.getAttribute('width'))||x.clientWidth, h=parseFloat(x.getAttribute('height'))||x.clientHeight;
+                    th+=h; if(w>mw) mw=w;
+                    let ht=new XMLSerializer().serializeToString(x);
+                    if(!ht.match(/^<svg[^>]* width="/)) ht=ht.replace('<svg',`<svg width="${w}" height="${h}"`);
+                    return {ht,w,h};
+                });
+                
+                const cv = document.createElement('canvas');
+                cv.width = mw+40; 
+                cv.height = th+(s.length*20)+40;
+                const cx = cv.getContext('2d');
+                cx.fillStyle='white'; 
+                cx.fillRect(0,0,cv.width,cv.height);
+                
+                let cy=20;
+                for(const d of sd){
+                    const im = new Image(), ur = URL.createObjectURL(new Blob([d.ht],{type:'image/svg+xml;charset=utf-8'}));
+                    await new Promise((r,j)=>{
+                        im.onload=()=>{ cx.drawImage(im,(cv.width-d.w)/2,cy,d.w,d.h); cy+=d.h+20; URL.revokeObjectURL(ur); r(); };
+                        im.onerror=j; 
+                        im.src=ur;
+                    });
+                }
+                const a = document.createElement('a');
+                a.download=`Solfeo_${cK.n.replace(/ /g,'_')}.jpg`;
+                a.href=cv.toDataURL('image/jpeg',1.0);
+                a.click();
+            } finally {
+                b.innerText=o; 
+                b.disabled=false;
+            }
+        }
+        
+        function exportToMusicXML(){ alert("MusicXML no soportado en esta vista. Exporte a JPEG."); }
     </script>
 </body>
 </html>
