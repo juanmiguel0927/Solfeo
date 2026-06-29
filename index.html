@@ -9,12 +9,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; padding: 0; }
-        #score-container { display: flex; flex-direction: column; align-items: center; width: 100%; padding: 20px 0; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,.1); border: 1px solid #e2e8f0; min-height: 200px; }
-        .system-line { display: flex; justify-content: center; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; margin-bottom: 0px; padding: 0 10px; }
+        #score-container { display: flex; flex-direction: column; align-items: center; width: 100%; padding: 30px 0; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,.1); border: 1px solid #e2e8f0; min-height: 250px; overflow: hidden; }
+        
+        .system-line { display: flex; justify-content: flex-start; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; margin-bottom: 45px; padding: 0 20px; padding-bottom: 25px; }
+        
+        .system-line::-webkit-scrollbar { height: 10px; }
+        .system-line::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 5px; }
+        .system-line::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 5px; }
+        .system-line::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
         .vf-note-highlighted path, .vf-note-highlighted rect { fill: #e11d48 !important; stroke: #e11d48 !important; stroke-width: 1px; transition: all .1s ease; }
         dialog::backdrop { background: rgba(15, 23, 42, .7); backdrop-filter: blur(4px); }
         #favorites-sidebar { transition: transform .3s ease-in-out; transform: translateX(100%); }
         #favorites-sidebar.open { transform: translateX(0); }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -43,6 +51,7 @@
         <div class="flex-grow space-y-4 md:space-y-6 w-full">
             <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-200">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    
                     <div class="lg:col-span-2">
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Niveles Estructurales</label>
                         <select id="level-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border text-sm md:text-base">
@@ -69,6 +78,7 @@
                             </optgroup>
                         </select>
                     </div>
+                    
                     <div>
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Clave y Rango</label>
                         <select id="clef-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border text-sm md:text-base">
@@ -90,6 +100,7 @@
                             </optgroup>
                         </select>
                     </div>
+                    
                     <div>
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Ritmo</label>
                         <select id="rhythm-select" class="block w-full rounded-md border-slate-300 bg-slate-50 p-2 md:p-2.5 border text-sm md:text-base">
@@ -110,6 +121,7 @@
                             <option value="IIVVI" selected>I - IV - V - I</option>
                         </select>
                     </div>
+                    
                     <div class="lg:col-span-2">
                         <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-1">Tempo (<span id="bpm-val">80</span> BPM)</label>
                         <input type="range" id="tempo-slider" min="40" max="160" value="80" class="block w-full mt-2 accent-red-600">
@@ -128,8 +140,10 @@
                             <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer"><input type="checkbox" id="cb-bass" checked class="rounded text-red-600 focus:ring-red-500"><span>Bajo</span></label>
                             <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer"><input type="checkbox" id="cb-chords" checked class="rounded text-red-600 focus:ring-red-500"><span>Acordes</span></label>
                             <div class="w-px h-4 bg-slate-300 mx-2 hidden md:block"></div>
-                            <div class="flex items-center space-x-2"><label class="text-xs md:text-sm font-semibold">Notas:</label><select id="notename-select" class="rounded p-1 text-sm"><option value="none">Ocultas</option><option value="latin">Do, Re, Mi</option><option value="anglo">C, D, E</option></select></div>
-                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer"><input type="checkbox" id="cb-deg-tonal" class="rounded text-red-600 focus:ring-red-500"><span>Gr. Tonal</span></label>
+                            
+                            <div class="flex items-center space-x-2"><label class="text-xs md:text-sm font-semibold">Notas:</label><select id="notename-select" class="rounded p-1 text-sm"><option value="none" selected>Ocultas</option><option value="latin">Do, Re, Mi</option><option value="anglo">C, D, E</option></select></div>
+                            
+                            <label class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer"><input type="checkbox" id="cb-deg-tonal" checked class="rounded text-red-600 focus:ring-red-500"><span>Gr. Tonal</span></label>
                             <label id="lbl-deg-chord" class="flex items-center space-x-2 text-xs md:text-sm font-semibold cursor-pointer hidden"><input type="checkbox" id="cb-deg-chord" class="rounded text-red-600 focus:ring-red-500"><span>Gr. Acorde</span></label>
                         </div>
                         <div class="flex-shrink-0 bg-white border border-slate-300 px-3 py-1.5 rounded-md shadow-sm flex items-center justify-center gap-2 mt-2 md:mt-0">
@@ -138,15 +152,16 @@
                     </div>
                     
                     <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 lg:col-span-4 mt-4">
-                        <button id="btn-generate" class="flex-1 bg-slate-800 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-slate-900 shadow-sm text-sm md:text-lg">Generar Nuevo [G]</button>
-                        <button id="btn-play" disabled class="flex-1 bg-red-600 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-red-700 shadow-sm flex justify-center items-center gap-2 text-sm md:text-lg"><span id="play-icon">▶</span><span id="play-text">Comenzar [Space]</span></button>
-                        <button id="btn-save-fav" disabled class="sm:flex-none bg-amber-500 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-amber-600 shadow-sm text-sm md:text-lg">★ Guardar Favorito</button>
+                        <button id="btn-generate" class="flex-1 bg-slate-800 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-slate-900 shadow-sm text-sm md:text-lg tracking-wide">Generar Nuevo [G]</button>
+                        <button id="btn-play" disabled class="flex-1 bg-red-600 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-red-700 shadow-sm flex justify-center items-center gap-2 text-sm md:text-lg tracking-wide"><span id="play-icon">▶</span><span id="play-text">Comenzar [Space]</span></button>
+                        <button id="btn-save-fav" disabled class="sm:flex-none bg-amber-500 text-white font-medium px-4 py-3 md:py-4 rounded-md hover:bg-amber-600 shadow-sm text-sm md:text-lg tracking-wide">★ Guardar Favorito</button>
                     </div>
                 </div>
                 <div id="status-display" class="mt-4 text-xs md:text-sm font-medium text-slate-800 bg-slate-100 p-2 md:p-3 rounded-md border hidden"></div>
             </div>
+            
             <div class="w-full mt-6" id="fullscreen-target">
-                <div id="score-container"><div class="text-slate-400 italic text-center py-12 w-full text-base md:text-lg">Iniciando Motor Analítico CSP...</div></div>
+                <div id="score-container"><div class="text-slate-400 italic text-center py-12 w-full text-base md:text-lg">Iniciando motor de solfeo...</div></div>
             </div>
         </div>
 
@@ -163,33 +178,58 @@
 
     <dialog id="help-modal" class="rounded-lg shadow-2xl p-0 w-11/12 max-w-4xl border border-slate-200 backdrop:bg-slate-900/50">
         <div class="p-6 flex flex-col h-full max-h-[85vh]">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b pb-2">Manual de Herramientas y Controles</h2>
-            <div class="overflow-y-auto flex-grow pr-2 space-y-5 text-sm text-slate-700 custom-scrollbar">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-base mb-1">1. Lógica Modal Relativa (Niveles Diatónicos 1 al 10)</h3>
-                    <p>El motor evalúa matemáticamente el <strong>grado relativo</strong> que ocupa el acorde dentro de la tonalidad madre para imponer la escala correcta. Ejemplo: En Sol Mayor, un acorde de Re Mayor (V) usa Mixolidio de Re, manteniendo la armadura de Sol pura.</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-900 text-base mb-1">2. Funciones Estructurales de Schoenberg (Máquina Markov)</h3>
-                    <p>Las progresiones se estructuran dinámicamente evaluando el movimiento de fundamentales y el peso del compás, priorizando resoluciones fuertes para los tiempos métricos relevantes y prohibiendo la concatenación ciega de acordes inestables.</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-900 text-base mb-1">3. Reglas de Contrapunto (Cantabilidad)</h3>
-                    <p>El motor implementa restricciones vocales estrictas para que la melodía sea natural de cantar, prohibiendo tritonos, obligando compensación melódica y manteniendo un rango tesitural cerrado.</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-900 text-base mb-1">4. Jerarquía de Análisis Bi-Axial (Inyección SVG)</h3>
-                    <p>Las anotaciones gráficas se imprimen inyectando texto absoluto en el DOM del SVG, ignorando las cajas de colisión. Esto asegura una cuadrícula cartesiana inquebrantable que no rebota con las plicas:</p>
-                    <ul class="list-decimal pl-5 mt-1 space-y-1">
-                        <li><strong>Nombre de la Nota:</strong> Anglo o Latino. Cifrado americano estandarizado (Ej: Bb, C#).</li>
-                        <li><strong>Gr. Tonal:</strong> Grado funcional respecto a la armadura (Ej: 5).</li>
-                        <li><strong>Gr. Acorde:</strong> Grado funcional respecto a la fundamental del acorde pasajero, acotado sutilmente con un corchete final (Ej: b3]).</li>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b pb-2">Manual de Usuario y Herramientas</h2>
+            <div class="overflow-y-auto flex-grow pr-4 space-y-6 text-sm text-slate-700 custom-scrollbar leading-relaxed">
+                <section>
+                    <h3 class="font-bold text-slate-900 text-lg mb-2 text-blue-700">1. Generación y Configuración Base</h3>
+                    <p>El motor diseña melodías basándose en contrapunto estricto. Usted define la estructura:</p>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li><strong>Niveles Estructurales:</strong> Determina el campo armónico. Del 1 al 6 es diatonismo simple. Del 11 al 15 se inyectan dominantes secundarias, acordes disminuidos y modulaciones complejas.</li>
+                        <li><strong>Ritmo:</strong> <em>Básico</em> (sin divisiones asimétricas), <em>Intermedio</em> (puntillos y 4 semicorcheas), <em>Avanzado</em> (síncopas, galopas y alta densidad métrica).</li>
+                        <li><strong>Pre-Afinación:</strong> Genera una cadencia armónica antes de comenzar a leer (I-V-I o I-IV-V-I) fundamental para establecer el centro tonal en el oído interno.</li>
                     </ul>
-                </div>
+                </section>
+                <section>
+                    <h3 class="font-bold text-slate-900 text-lg mb-2 text-blue-700">2. Análisis Analítico (Herramientas Visuales)</h3>
+                    <p>Bajo la partitura, puede activar guías dinámicas que se actualizan en tiempo real:</p>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li><strong>Notas:</strong> Muestra el nombre de la nota en sistema Latino (Do, Re, Mi) o Anglo (C, D, E). <em>Se recomienda mantener en "Ocultas" para no generar dependencia visual.</em></li>
+                        <li><strong>Gr. Tonal:</strong> Muestra el grado de la nota respecto a la <strong>Armadura de Clave Global</strong> (Ej. Si estamos en Do Mayor, el Re siempre será "2").</li>
+                        <li><strong>Gr. Acorde (Corchetes ]):</strong> Muestra el grado de la nota respecto a la <strong>Raíz del Acorde Activo</strong> en ese instante. Herramienta vital en niveles avanzados para entender qué tensión representa una nota sobre un acorde dominante secundario.</li>
+                    </ul>
+                </section>
+                <section>
+                    <h3 class="font-bold text-slate-900 text-lg mb-2 text-blue-700">3. Mezclador Acústico de 4 Canales</h3>
+                    <p>Control independiente del audio durante la reproducción. Puede ajustar o silenciar (fader al mínimo) cada elemento:</p>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li><strong>Vol. Melodía:</strong> El sintetizador que toca la partitura generada.</li>
+                        <li><strong>Vol. Metrónomo:</strong> Pulso de percusión de fondo.</li>
+                        <li><strong>Vol. Acordes:</strong> El colchón armónico (teclado) que acompaña la melodía.</li>
+                        <li><strong>Vol. Bajo:</strong> La fundamental del acorde (onda sub-grave).</li>
+                    </ul>
+                </section>
+                <section>
+                    <h3 class="font-bold text-slate-900 text-lg mb-2 text-blue-700">4. Controles de Práctica y Teclas Rápidas</h3>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Metro. Fijo:</strong> Si está activo, el metrónomo seguirá sonando antes y después de que la melodía termine.</li>
+                        <li><strong>[G] Generar Nuevo:</strong> Presione la tecla 'G' para calcular un ejercicio nuevo instantáneamente.</li>
+                        <li><strong>[Space] Comenzar/Detener:</strong> Presione la barra espaciadora para reproducir o detener la partitura.</li>
+                        <li><strong>[M]</strong> Activa/Desactiva el metrónomo fijo.</li>
+                        <li><strong>[F]</strong> Guarda el ejercicio actual en Favoritos.</li>
+                    </ul>
+                </section>
+                <section>
+                    <h3 class="font-bold text-slate-900 text-lg mb-2 text-blue-700">5. Exportación y Favoritos</h3>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Exportar JPEG:</strong> Captura el lienzo SVG de la partitura y lo convierte en una imagen de alta resolución.</li>
+                        <li><strong>Exportar XML:</strong> Genera un archivo MusicXML válido para importar a Sibelius, MuseScore o Finale.</li>
+                        <li><strong>Favoritos:</strong> Guarda la semilla estructural del ejercicio en la memoria de su navegador.</li>
+                    </ul>
+                </section>
             </div>
             <div class="mt-6 pt-4 border-t flex justify-between items-center">
-                <span class="text-xs text-slate-400 italic">Desarrollado por: Juan Miguel Rios Redondo</span>
-                <button onclick="document.getElementById('help-modal').close()" class="bg-slate-800 text-white px-6 py-2 rounded-md hover:bg-slate-900">Entendido</button>
+                <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Desarrollado por: Juan Miguel Rios Redondo</span>
+                <button onclick="document.getElementById('help-modal').close()" class="bg-slate-800 text-white px-6 py-2 rounded-md hover:bg-slate-900 shadow font-semibold">Cerrar Manual</button>
             </div>
         </div>
     </dialog>
@@ -243,6 +283,61 @@
             '9/8':{b:3,t:'compound',bu:'qd',mu:'hd_qd',dn:8}, '12/8':{b:4,t:'compound',bu:'qd',mu:'w.',dn:8}
         };
 
+        // MATRIZ RÍTMICA EXCLUSIVA Y RESTRINGIDA (Aplicando reglas obligatorias)
+        // Solo las 8 figuras exigidas para métricas basadas en cuartos (q)
+        const MOTIFS = {
+            'simple': {
+                'basic': { 
+                    'q': [['q'], ['8','8']],
+                    'h': [['h'], ['q','q']],
+                    '8': [['8'], ['16','16']],
+                    '16': [['16']]
+                },
+                'intermediate': { 
+                    'q': [
+                        ['q'], 
+                        ['8','8'], 
+                        ['8d','16'],          
+                        ['8','16','16'],      
+                        ['16','16','8'],      
+                        ['16','16','16','16'] 
+                    ],
+                    'h': [['h'], ['q','q'], ['qd','8'], ['8','8','8','8']],
+                    '8': [['8'], ['16','16'], ['16d','32'], ['32','32','32','32']],
+                    '16': [['16'], ['32','32']]
+                },
+                'advanced': { 
+                    'q': [
+                        ['q'], 
+                        ['8','8'], 
+                        ['8d','16'],          
+                        ['8','16','16'],      
+                        ['16','16','8'],      
+                        ['16','8','16'],      
+                        ['16','8d'],          
+                        ['16','16','16','16'] 
+                    ],
+                    'h': [['h'], ['q','q'], ['qd','8'], ['8','8','8','8'], ['q','8','8'], ['8','8','q'], ['8','q','8']],
+                    '8': [['8'], ['16','16'], ['16d','32'], ['32','32','32','32'], ['16','32','32'], ['32','32','16'], ['32','16','32']],
+                    '16': [['16'], ['32','32']]
+                }
+            },
+            'compound': {
+                'basic': { 
+                    'qd': [['qd'], ['8','8','8']], 
+                    '8d': [['8d'], ['16','16','16']] 
+                },
+                'intermediate': { 
+                    'qd': [['qd'], ['8','8','8'], ['q','8'], ['8','q']], 
+                    '8d': [['8d'], ['16','16','16'], ['8','16'], ['16','8']] 
+                },
+                'advanced': { 
+                    'qd': [['qd'], ['8','8','8'], ['q','8'], ['8','q'], ['16','16','16','16','16','16']], 
+                    '8d': [['8d'], ['16','16','16'], ['8','16'], ['16','8'], ['32','32','32','32','32','32']] 
+                }
+            }
+        };
+
         const FD = { 
             '1':{s:0,st:0},'b2':{s:1,st:1},'#1':{s:1,st:0},'2':{s:2,st:1},'b3':{s:3,st:2},
             '#2':{s:3,st:1},'3':{s:4,st:2},'4':{s:5,st:3},'b5':{s:6,st:4},'#4':{s:6,st:3},
@@ -266,28 +361,6 @@
             {n:'Re Menor',t:'min',rt:50,v:'Dm',ac:{b:'b'},dg:['d','e','f','g','a','bb','c#'],ff:-1}
         ];
 
-        const MOTIFS = {
-            'simple': {
-                'basic': { 'h': [['h']], 'q': [['q']], '8': [['8']], '16': [['16']] },
-                'intermediate': { 'h': [['h'],['q','q']], 'q': [['q'],['8','8']], '8': [['8'],['16','16']], '16': [['16'],['32','32']] },
-                'advanced': { 
-                    'h': [['h'],['q','q'],['8','8','8','8'],['q','8','8']], 
-                    'q': [['q'],['8','8'],['16','16','16','16'],['8','16','16']], 
-                    '8': [['8'],['16','16'],['32','32','32','32'],['16','32','32']], 
-                    '16': [['16'],['32','32']] 
-                }
-            },
-            'compound': {
-                'basic': { 'hd': [['hd']], 'qd': [['qd']], '8d': [['8d']] },
-                'intermediate': { 'hd': [['hd'],['q','q','q'],['h','q']], 'qd': [['qd'],['8','8','8'],['q','8']], '8d': [['8d'],['16','16','16'],['8','16']] },
-                'advanced': { 
-                    'hd': [['hd'],['q','q','q'],['h','q'],['q','h'],['8','8','8','8','8','8']], 
-                    'qd': [['qd'],['8','8','8'],['q','8'],['8','q'],['16','16','16','16','16','16']], 
-                    '8d': [['8d'],['16','16','16'],['8','16'],['16','8'],['32','32','32','32','32','32']] 
-                }
-            }
-        };
-
         const IMj=[0,2,4,5,7,9,11], IMn=[0,2,3,5,7,8,10], Mix=[0,2,4,5,7,9,10], Mix_b6=[0,2,4,5,7,8,10], Mix_b2_b6=[0,1,4,5,7,8,10];  
         const DWH=[0,2,3,5,6,8,9,11], Loc=[0,1,3,5,6,8,10], L_2=[0,3,4,6,7,9,11], M_4=[0,2,4,6,7,9,10];      
         const I_Dor=[0,2,3,5,7,9,10], I_Phr=[0,1,3,5,7,8,10], I_Lyd=[0,2,4,6,7,9,11];
@@ -295,25 +368,46 @@
         const cD = (l,r,s,iv) => ({l,r,s,iv});
 
         function genRh(c, isE, ts, mI, tM) {
-            if(isE) return { rh: ts.mu.includes('_') ? ts.mu.split('_').map(p=>RHY[p]) : [RHY[ts.mu]] };
-            let rh=[], bL=ts.b, isC=(mI===tM-2)||(mI===Math.floor(tM/2)-2), isR=(mI===0)||(mI===Math.floor(tM/2));
-            while(bL>0){
-                let f=false; 
-                if(bL>=2){ 
-                    if(isC&&c!=='basic') f=false; 
-                    else if(isR) f=Math.random()>0.3; 
-                    else if(c==='basic') f=Math.random()>0.5; 
-                    else if(c==='intermediate') f=Math.random()>0.7; 
+            if(isE) return { rh: ts.mu.includes('_') ? ts.mu.split('_').map(p=>({ ...RHY[p], beatGroup: 0 })) : [{ ...RHY[ts.mu], beatGroup: 0 }] };
+            let rh=[], bL=ts.b;
+            let beatId = 0;
+
+            while(bL > 0) {
+                let allow2Beat = false;
+                if (bL >= 2) {
+                    if (ts.b === 4 && (bL === 4 || bL === 2)) allow2Beat = true; 
+                    else if (ts.b === 2 && bL === 2) allow2Beat = true; 
+                    else if (ts.b === 3 && (bL === 3 || bL === 2)) allow2Beat = true; 
+                    else if (ts.t === 'compound' && (bL === 4 || bL === 2)) allow2Beat = true; 
                 }
-                if(f){ 
-                    let fd = ts.t==='simple' ? (ts.bu==='q'?'h':(ts.bu==='8'?'q':(ts.bu==='h'?'w':''))) : (ts.bu==='qd'?'hd':(ts.bu==='8d'?'qd':'')); 
-                    if(fd && RHY[fd]){ rh.push(RHY[fd]); bL-=2; continue; } 
+
+                let f = false;
+                if (allow2Beat) {
+                    if (c === 'basic') f = Math.random() > 0.5;
+                    else if (c === 'intermediate') f = Math.random() > 0.7;
+                    else f = Math.random() > 0.8;
                 }
-                let bMs = MOTIFS[ts.t][isC?'advanced':c][ts.bu] || [[ts.bu]]; 
-                let mo = bMs[Math.floor(Math.random()*bMs.length)]; 
-                for(let d of mo) rh.push(RHY[d]); 
-                bL-=1;
-            } 
+
+                if(f) {
+                    let fd = ts.t==='simple' ? (ts.bu==='q'?'h':(ts.bu==='8'?'q':(ts.bu==='h'?'w':''))) : (ts.bu==='qd'?'hd':(ts.bu==='8d'?'qd':''));
+                    if(fd && RHY[fd]){ 
+                        rh.push({ ...RHY[fd], beatGroup: beatId }); 
+                        bL -= 2; 
+                        beatId += 2;
+                        continue; 
+                    }
+                }
+
+                let bMs = MOTIFS[ts.t][c][ts.bu] || [[ts.bu]];
+                let mo = bMs[Math.floor(Math.random()*bMs.length)];
+                
+                for(let d of mo) {
+                    let noteData = { ...RHY[d], beatGroup: beatId };
+                    rh.push(noteData);
+                }
+                bL -= 1;
+                beatId += 1;
+            }
             return {rh};
         }
 
@@ -326,8 +420,12 @@
                     let f=FD[l], ls=(rs+f.st)%7, lt=ns[ls], nm={'c':0,'d':2,'e':4,'f':5,'g':7,'a':9,'b':11};
                     let nMi=(o+1)*12+nm[lt], tg=(o+1)*12+((ki.rt+f.s)%12);
                     if(tg-nMi>6) tg-=12; else if(nMi-tg>6) tg+=12;
+                    
                     if(tg>=rMn && tg<=rMx){
-                        let d=tg-nMi, a=d===1?'#':(d===2?'##':(d===-1?'b':(d===-2?'bb':'')));
+                        let d=tg-nMi;
+                        if (Math.abs(d) > 1) continue; 
+                        
+                        let a = d === 1 ? '#' : (d === -1 ? 'b' : '');
                         p.push({md:tg, l:l, st:f.st, nn:lt+a, oc:Math.floor(tg/12)-1, tn:lt.toUpperCase()+a+(Math.floor(tg/12)-1)});
                     }
                 }
@@ -383,11 +481,12 @@
             if(lvl<7) pool = getValD(rP, lvl, rT, aM);
             
             let isC = lvl>=7;
-            let mCObj = [], mCh = [], mB = [], mCM = [];
+            let chProg = [];
+            
+            let cpm = (rC === 'basic' || tsC.b === 3) ? 1 : 2; 
+            let tC = nM * cpm; 
             
             if(isC) {
-                let chP = [];
-                // MATRIZ DE MARKOV PONDERADA (Schoenberg)
                 let I_c = rT==='maj'? cD(['1','3','5'],'1','',IMj) : cD(['1','b3','5'],'1','m',IMn);
                 let ii_c = rT==='maj'? cD(['2','4','6'],'2','m',I_Dor) : cD(['2','4','b6'],'2','°',Loc);
                 let iii_c = rT==='maj'? cD(['3','5','7'],'3','m',I_Phr) : cD(['b3','5','b7'],'b3','',IMj);
@@ -398,11 +497,9 @@
 
                 let cPool = [I_c, IV_c, V_c];
                 if (lvl >= 9) cPool.push(ii_c, iii_c, vi_c, vii_c);
-                if (lvl === 11) {
-                    cPool.push(cD(['5','7','2','4'],'5','7',Mix)); 
-                } else if (lvl === 12) {
-                    cPool.push(rT==='maj' ? cD(['7','2','4','6'],'7','ø7',Loc) : cD(['7','2','4','b6'],'7','°7',DWH));
-                } else if (lvl === 13) {
+                if (lvl === 11) cPool.push(cD(['5','7','2','4'],'5','7',Mix)); 
+                else if (lvl === 12) cPool.push(rT==='maj' ? cD(['7','2','4','6'],'7','ø7',Loc) : cD(['7','2','4','b6'],'7','°7',DWH));
+                else if (lvl === 13) {
                     cPool.push(ii_c, iii_c, vi_c);
                     if(rT==='maj') {
                         cPool.push(cD(['6','#1','3','5'],'6','7',Mix_b6)); cPool.push(cD(['7','#2','#4','6'],'7','7',Mix_b2_b6)); cPool.push(cD(['1','3','5','b7'],'1','7',Mix)); cPool.push(cD(['2','#4','6','1'],'2','7',Mix)); cPool.push(cD(['3','#5','7','2'],'3','7',Mix_b2_b6));
@@ -421,15 +518,22 @@
                     cPool.push(cD(['b2','4','b6'],'b2','',L_2)); cPool.push(cD(['b6','1','b3','#4'],'b6','+6',M_4));
                 }
 
+                cPool = cPool.filter(ch => rP.find(n => n.l === ch.r) !== undefined);
                 const rootStep = (r) => parseInt(r.replace(/[^1-7]/g, '')) || 1;
 
-                chP[0] = (Math.random() > 0.5) ? I_c : V_c;
-                if(nM > 1) chP[nM - 1] = I_c;
-                if(nM > 2) chP[nM - 2] = (Math.random() > 0.4) ? V_c : IV_c;
+                for(let i=0; i<tC; i++) chProg.push(I_c);
+                chProg[0] = (Math.random() > 0.5) ? I_c : V_c;
+                
+                for(let k=1; k<=cpm; k++) chProg[tC - k] = I_c;
+                
+                let cadenceIdx = tC - cpm - 1;
+                if (cadenceIdx > 0) chProg[cadenceIdx] = (Math.random() > 0.4) ? V_c : IV_c;
 
-                for (let i = 1; i < nM - 2; i++) {
-                    let prevChord = chP[i - 1];
-                    let isEnteringStrong = (i % 2 === 0); // En index 0-based, impar es débil, par es fuerte.
+                for (let i = 1; i <= cadenceIdx; i++) {
+                    if (i === cadenceIdx) continue; 
+                    
+                    let prevChord = chProg[i - 1];
+                    let isEnteringStrong = (i % 2 === 0); 
                     
                     let candidates = cPool.map(cand => {
                         let pR = rootStep(prevChord.r);
@@ -440,77 +544,40 @@
                         let prevIsDim = prevChord.s.includes('°') || prevChord.s.includes('ø');
                         let candIsDim = cand.s.includes('°') || cand.s.includes('ø');
                         
-                        // Guardarraíl: No disminuir sobre disminuido
                         if (prevIsDim && candIsDim) return { cand, score: 0 };
-                        
-                        // Guardarraíl: Dominante Secundaria -> Resolución obligatoria 4ta ascendente o Deceptiva
                         if (prevChord.s.includes('7') && prevChord.r !== '5' && prevChord.r !== '7') {
                             if (dist === 3 || dist === 1) score = 100;
                             else return { cand, score: 0 };
                         }
-                        
-                        // Guardarraíl: Disminuido resuelve 2da ascendente o 4ta
                         if (prevIsDim) {
                             if (dist === 1 || dist === 3) score = 100; 
                             else return { cand, score: 0 };
                         }
 
-                        // Pesos Schoenberg
-                        if (dist === 3 || dist === 5) { // Movimiento Fuerte
-                            score = isEnteringStrong ? 70 : 30;
-                        } else if (dist === 4 || dist === 2) { // Movimiento Débil
-                            score = isEnteringStrong ? 10 : 60;
-                        } else if (dist === 1 || dist === 6) { // Movimiento Superfuerte
-                            score = 20;
-                        } else {
-                            score = 5; // Mismo acorde
-                        }
+                        if (dist === 3 || dist === 5) { score = isEnteringStrong ? 70 : 30; } 
+                        else if (dist === 4 || dist === 2) { score = isEnteringStrong ? 10 : 60; } 
+                        else if (dist === 1 || dist === 6) { score = 20; } 
+                        else { score = 5; }
+                        
                         return { cand, score };
                     }).filter(c => c.score > 0);
 
-                    if (candidates.length === 0) {
-                        chP[i] = I_c; 
-                    } else {
+                    if (candidates.length > 0) {
                         let totalScore = candidates.reduce((sum, c) => sum + c.score, 0);
                         let roll = Math.random() * totalScore;
                         let runningSum = 0;
                         for (let c of candidates) {
                             runningSum += c.score;
-                            if (roll <= runningSum) {
-                                chP[i] = c.cand;
-                                break;
-                            }
+                            if (roll <= runningSum) { chProg[i] = c.cand; break; }
                         }
                     }
-                }
-
-                for(let i=0; i<nM; i++) {
-                    let c = chP[i];
-                    mCObj.push(c); 
-                    mCh.push(c.l);
-                    let bc = rP.find(n=>n.l===c.l[0]);
-                    let rc = rP.find(n=>n.l===c.r);
-                    if(bc && rc){ 
-                        let bm = (bc.md%12)+36; if(bm<40) bm+=12; 
-                        let ba = bc.nn.charAt(0).toUpperCase() + bc.nn.substring(1).toLowerCase();
-                        let ra = rc.nn.charAt(0).toUpperCase() + rc.nn.substring(1).toLowerCase(); 
-                        mB.push({md:bm, d:ra+c.s+(ba!==ra?'/'+ba:'')}); 
-                    } else {
-                        mB.push(null);
-                    }
-                    let ms=[]; 
-                    c.l.forEach(l => {
-                        let t = rP.find(n=>n.l===l);
-                        if(t) ms.push((t.md%12)+60);
-                    }); 
-                    mCM.push(ms);
                 }
             }
             
             let mI = nM>3 ? Math.floor(nM/2)-1 : -1;
             let vld = false, mac = 0;
             
-            while(!vld && mac<5) {
+            while(!vld && mac<3) {
                 mac++; 
                 let evs=[], eC=0, exR=[]; 
                 
@@ -528,13 +595,21 @@
                 
                 let tS1 = Math.random()>.5 ? 1 : -1;
                 let tS2 = lvl<3 ? -tS1 : (Math.random()>.5?2:-2);
-                let aPM = [];
+                let lastChordIdx = -1;
                 
                 for(let i=0; i<nM; i++) {
-                    aPM.push(exR[i].rh.length); 
                     let cB=0, tS=i===1?tS1:tS2;
+                    let chordDur = (tsC.b * RHY[tsC.bu].b) / cpm; 
+                    
                     for(let j=0; j<exR[i].rh.length; j++) {
                         let r = exR[i].rh[j];
+                        let chIdxInM = Math.floor(cB / chordDur);
+                        if (chIdxInM >= cpm) chIdxInM = cpm - 1;
+                        let overallChIdx = (i * cpm) + chIdxInM;
+                        
+                        let isNew = overallChIdx !== lastChordIdx;
+                        lastChordIdx = overallChIdx;
+                        
                         let lb = cB/RHY[tsC.bu].b;
                         let sb = (tsC.t==='simple' ? (tsC.b===4&&(lb<.01||Math.abs(lb-2)<.01))||lb<.01 : (lb%1)<.01);
                         
@@ -543,10 +618,10 @@
                             vl: (i===nM-1 && j===exR[i].rh.length-1),
                             pn: (i===nM-1 && j===exR[i].rh.length-2),
                             mE: (i===mI && j===exR[i].rh.length-1) && lvl>2,
-                            sM: (i===1||i===5) && nM>=4,
-                            sO: i===1 ? aPM[0] : (i===5?aPM[4]:0),
                             tS: tS, 
-                            cO: isC ? mCObj[i] : null
+                            cO: isC ? chProg[overallChIdx] : null,
+                            pCObj: (isC && overallChIdx > 0) ? chProg[overallChIdx - 1] : null,
+                            isNew: isNew
                         }); 
                         cB += r.b; 
                     }
@@ -554,7 +629,7 @@
 
                 let cIdx=0, pth=[], stks=new Array(evs.length).fill(null), bk=0;
                 
-                while(cIdx>=0 && cIdx<evs.length && bk<30000) {
+                while(cIdx>=0 && cIdx<evs.length && bk<2000) {
                     let ev = evs[cIdx]; 
                     if(!stks[cIdx]) {
                         let cs=[], pp=cIdx>0?pth[cIdx-1]:null;
@@ -562,7 +637,13 @@
                         if(ev.vl) {
                             cs = rP.filter(n=>n.l==='1').sort((a,b)=>Math.abs(a.md-aM)-Math.abs(b.md-aM));
                         } else if(cIdx===0) {
-                            cs = rP.filter(n=>(lvl<3?['1','3']:['1','5']).includes(n.l)).sort((a,b)=>Math.abs(a.md-aM)-Math.abs(b.md-aM));
+                            if (isC && ev.cO) {
+                                let allowed = [...ev.cO.l];
+                                if (ev.cO.r === '5') allowed.push('4'); 
+                                cs = rP.filter(n=>allowed.includes(n.l)).sort((a,b)=>Math.abs(a.md-aM)-Math.abs(b.md-aM));
+                            } else {
+                                cs = rP.filter(n=>['1','3','5'].includes(n.l)).sort((a,b)=>Math.abs(a.md-aM)-Math.abs(b.md-aM));
+                            }
                         } else if(ev.pn) {
                             let pc = rP.filter(n=>(lvl<3?['2']:['7','b7','2']).includes(n.l)); 
                             if(isC) pc=pc.filter(n=>ev.cO.l.includes(n.l)); 
@@ -571,9 +652,15 @@
                             cs = rP.filter(n=>['5','2','7'].includes(n.l)).sort((a,b)=>Math.abs(a.md-pp.md)-Math.abs(b.md-pp.md));
                         } else {
                             let pcC = pool, gt=false; 
+                            let rootMidi = aM; 
+                            
+                            if(ev.cO) {
+                                let fRoot = rP.find(n=>n.l===ev.cO.r);
+                                if (fRoot) rootMidi = fRoot.md;
+                            }
+
                             if(isC && ev.cO) {
-                                let rtM = rP.find(n=>n.l===ev.cO.r).md;
-                                let awd = ev.cO.iv.map(i=>(rtM+i)%12);
+                                let awd = ev.cO.iv.map(i=>(rootMidi+i)%12);
                                 pcC = rP.filter(n=>awd.includes(n.md%12)); 
                                 
                                 let uPc = [];
@@ -590,21 +677,10 @@
                                     }
                                 }
                                 pcC = uPc;
-
-                                if (lvl === 7 || lvl === 8) {
-                                    pcC = pcC.filter(n => ev.cO.l.includes(n.l));
-                                } else if (ev.sb) {
-                                    let chT = ev.cO.l.map(l=>rP.find(n=>n.l===l).md%12);
-                                    pcC = pcC.filter(n=>{ 
-                                        let m=n.md%12; 
-                                        return chT.includes(m) || !chT.includes((m+11)%12); 
-                                    }); 
-                                }
+                                if (lvl === 7 || lvl === 8) pcC = pcC.filter(n => ev.cO.l.includes(n.l));
                             } else {
                                 let sc = gDS(ev.cO?ev.cO.r:(pp?pp.l:'1'), rT);
-                                let rtM = aM; 
-                                if(ev.cO) rtM=rP.find(n=>n.l===ev.cO.r).md;
-                                let awd = sc.map(i=>(rtM+i)%12); 
+                                let awd = sc.map(i=>(rootMidi+i)%12); 
                                 pcC = pcC.filter(n=>awd.includes(n.md%12));
                                 
                                 let uPc = [];
@@ -625,13 +701,8 @@
                                     if(pp.l==='4') f=pcC.filter(n=>['3','b3'].includes(n.l));
                                     else if(['6','b6'].includes(pp.l)) f=pcC.filter(n=>n.l==='5');
                                     else if(pp.l==='7') f=pcC.filter(n=>n.l==='1');
-                                    
                                     let cf=f.filter(n=>Math.abs(n.md-pp.md)<=2); 
                                     if(cf.length>0){ pcC=cf; gt=true; }
-                                }
-                                if(!gt && ev.sb && (!isC||lvl>8)){
-                                    let ct=pcC.filter(n=>['1','3','b3','5'].includes(n.l));
-                                    if(ct.length>0) pcC=ct;
                                 }
                             }
 
@@ -645,6 +716,14 @@
                                 let isFast = ev.r.b < (RHY[tsC.bu].b * 0.9);
                                 if (isFast && iv > 4) return false; 
                                 
+                                let intFromRoot = (c.md - rootMidi + 120) % 12;
+                                let isPC = intFromRoot === 0 || intFromRoot === 7;
+                                let isIC = intFromRoot === 3 || intFromRoot === 4 || intFromRoot === 8 || intFromRoot === 9;
+                                let isDissonant = !isPC && !isIC;
+
+                                let isLong = ev.r.b >= 1; 
+                                if ((ev.sb || isLong) && isDissonant) return false; 
+
                                 if (pth.length > 1) {
                                     let p2 = pth[pth.length - 2];
                                     let pIv = Math.abs(pp.md - p2.md);
@@ -660,17 +739,57 @@
                                 return true;
                             });
 
+                            if (ev.cO && ev.pCObj && ev.cO !== ev.pCObj && pth.length > 0) {
+                                const rootStep = (r) => parseInt(r.replace(/[^1-7]/g, '')) || 1;
+                                let pR = rootStep(ev.pCObj.r);
+                                let cR = rootStep(ev.cO.r);
+                                let rootDist = Math.abs(cR - pR);
+                                if (rootDist === 1 || rootDist === 6) { 
+                                    let pRootM = rP.find(n => n.l === ev.pCObj.r);
+                                    let cRootM = rP.find(n => n.l === ev.cO.r);
+                                    if(pRootM && cRootM) {
+                                        let bassDir = Math.sign(cRootM.md - pRootM.md);
+                                        validCands = validCands.filter(cand => {
+                                            let melDir = Math.sign(cand.md - pp.md);
+                                            if (bassDir > 0 && melDir > 0) return false;
+                                            if (bassDir < 0 && melDir < 0) return false;
+                                            return true;
+                                        });
+                                    }
+                                }
+                            }
+
                             let edgeMax = CR[cf].mx - 2;
                             let edgeMin = CR[cf].mn + 2;
                             if (pp.md > edgeMax) validCands = validCands.filter(c => c.md < pp.md);
                             if (pp.md < edgeMin) validCands = validCands.filter(c => c.md > pp.md);
 
                             cs = validCands.sort((a, b) => {
+                                let intA = (a.md - rootMidi + 120) % 12;
+                                let intB = (b.md - rootMidi + 120) % 12;
+                                let isPCA = intA === 0 || intA === 7;
+                                let isICA = intA === 3 || intA === 4 || intA === 8 || intA === 9;
+                                let isPCB = intB === 0 || intB === 7;
+                                let isICB = intB === 3 || intB === 4 || intB === 8 || intB === 9;
+
+                                let scoreA = 0; let scoreB = 0;
+
+                                if (ev.vl || cIdx === 0) {
+                                    if (isPCA) scoreA -= 20; 
+                                    if (isPCB) scoreB -= 20;
+                                } else {
+                                    if (isICA) scoreA -= 15; 
+                                    if (isPCA) scoreA += 10; 
+                                    if (isICB) scoreB -= 15;
+                                    if (isPCB) scoreB += 10;
+                                }
+
                                 let ivA = Math.abs(a.md - pp.md);
                                 let ivB = Math.abs(b.md - pp.md);
-                                let pA = ivA > 2 ? ivA*2 : ivA;
-                                let pB = ivB > 2 ? ivB*2 : ivB;
-                                return (pA - pB) + (Math.random() * 1.5 - 0.75);
+                                scoreA += (ivA > 2 ? ivA*2 : ivA);
+                                scoreB += (ivB > 2 ? ivB*2 : ivB);
+
+                                return scoreA - scoreB + (Math.random() * 1.5 - 0.75);
                             });
                         }
                         if(cs.length===0 && pp) cs=[pp]; 
@@ -695,52 +814,115 @@
                     for(let i=0; i<nM; i++) { 
                         let mN=[]; 
                         for(let j=0; j<exR[i].rh.length; j++){
-                            mN.push({r:exR[i].rh[j], p:pth[pI++]});
+                            let ev = evs[pI];
+                            let nData = { r: exR[i].rh[j], p: pth[pI], ev: ev };
+                            
+                            if(isC && ev.isNew && ev.cO) {
+                                let bc = rP.find(n=>n.l===ev.cO.l[0]);
+                                let rc = rP.find(n=>n.l===ev.cO.r);
+                                if(bc && rc){ 
+                                    let bm = (bc.md%12)+36; if(bm<40) bm+=12; 
+                                    let ba = bc.nn.charAt(0).toUpperCase() + bc.nn.substring(1).toLowerCase();
+                                    let ra = rc.nn.charAt(0).toUpperCase() + rc.nn.substring(1).toLowerCase(); 
+                                    nData.bD = ra + ev.cO.s + (ba!==ra ? '/' + ba : ''); 
+                                    nData.bM = bm;
+                                    let ms=[]; 
+                                    ev.cO.l.forEach(l => {
+                                        let t = rP.find(n=>n.l===l);
+                                        if(t) ms.push((t.md%12)+60);
+                                    }); 
+                                    nData.cmM = ms;
+                                    nData.rtM = rc.md;
+                                }
+                            } else if (isC && ev.cO) {
+                                let rc = rP.find(n=>n.l===ev.cO.r);
+                                nData.rtM = rc ? rc.md : null;
+                            }
+                            mN.push(nData);
+                            pI++;
                         } 
+                        exD.push({n: mN}); 
+                    }
+
+                    let flatNotes = [];
+                    exD.forEach(m => m.n.forEach(n => flatNotes.push(n)));
+                    
+                    let diatonicPitches = cK.dg.map(dgName => {
+                        let base = dgName.charAt(0);
+                        let acc = dgName.substring(1);
+                        let val = {'c':0,'d':2,'e':4,'f':5,'g':7,'a':9,'b':11}[base];
+                        if (acc==='#') val++;
+                        if (acc==='b') val--;
+                        return (val + 12) % 12;
+                    });
+                    
+                    const sharps = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
+                    const flats  = ['c', 'db', 'd', 'eb', 'e', 'f', 'gb', 'g', 'ab', 'a', 'bb', 'b'];
+
+                    for(let i=0; i<flatNotes.length; i++) {
+                        let curr = flatNotes[i].p;
+                        let prev = i > 0 ? flatNotes[i-1].p : null;
+                        let next = i < flatNotes.length - 1 ? flatNotes[i+1].p : null;
                         
-                        let rootMidi = null;
-                        if(isC && mCObj[i]) {
-                            let rc = rP.find(n => n.l === mCObj[i].r);
-                            if(rc) rootMidi = rc.md;
+                        let isDiatonic = diatonicPitches.includes(curr.md % 12);
+
+                        if (isDiatonic) {
+                            curr.nn = cK.dg[diatonicPitches.indexOf(curr.md % 12)];
+                        } else {
+                            let pMd = prev ? prev.md : curr.md;
+                            let nMd = next ? next.md : curr.md;
+                            let useSharp = true;
+                            
+                            if (pMd === nMd) {
+                                useSharp = curr.md < pMd; 
+                            } else if (pMd < curr.md && curr.md < nMd) {
+                                useSharp = true; 
+                            } else if (pMd > curr.md && curr.md > nMd) {
+                                useSharp = false; 
+                            } else {
+                                useSharp = curr.md > pMd; 
+                            }
+                            
+                            curr.nn = useSharp ? sharps[curr.md % 12] : flats[curr.md % 12];
                         }
-                        
-                        exD.push({n:mN, b:isC?mB[i]:null, cm:isC?mCM[i]:null, rtM: rootMidi}); 
+                        curr.tn = curr.nn.charAt(0).toUpperCase() + curr.nn.substring(1) + curr.oc;
                     }
                 }
             }
             
             if(!vld) {
-                document.getElementById('status-display').innerHTML=`<span class="text-red-600 font-bold">Error CSP. Baje complejidad.</span>`;
+                document.getElementById('status-display').innerHTML=`<span class="text-red-600 font-bold">Límite CSP Excedido: Baje la complejidad del ejercicio. Reglas demasiado estrictas para calcular a tiempo real.</span>`;
             } else {
-                document.getElementById('btn-save-fav').disabled=false; 
-                sT();
                 document.getElementById('status-display').classList.remove('hidden');
                 document.getElementById('status-display').innerHTML=`<strong>${cK.n}</strong> | Clave: ${document.getElementById('clef-select').options[document.getElementById('clef-select').selectedIndex].text} | Compás: ${document.getElementById('timesig-select').value}`;
+                sT();
                 dSR();
                 document.getElementById('btn-play').disabled=false;
+                document.getElementById('btn-save-fav').disabled=false;
             }
         }
 
-        // Delegación de renderizado asíncrono para inyección nativa SVG
-        async function injectSvgText(svgNode, dataList, yBase) {
+        async function injectSvgText(svgNode, dataList, yBase, topYBase) {
             dataList.forEach(item => {
-                let currentY = yBase;
-                const drawText = (txt) => {
+                const drawText = (txt, color, size, weight, family, yPos) => {
                     let textNode = document.createElementNS("http://www.w3.org/2000/svg", "text");
                     textNode.setAttribute("x", item.x);
-                    textNode.setAttribute("y", currentY);
-                    textNode.setAttribute("font-family", "sans-serif");
-                    textNode.setAttribute("font-size", "12px");
-                    textNode.setAttribute("font-weight", "bold");
+                    textNode.setAttribute("y", yPos);
+                    textNode.setAttribute("font-family", family || "sans-serif");
+                    textNode.setAttribute("font-size", size || "14px");
+                    textNode.setAttribute("font-weight", weight || "bold");
                     textNode.setAttribute("text-anchor", "middle"); 
-                    textNode.setAttribute("fill", "#0f172a");
+                    textNode.setAttribute("fill", color || "#0f172a");
                     textNode.textContent = txt;
                     svgNode.appendChild(textNode);
-                    currentY += 15; 
                 };
-                if(item.n) drawText(item.n);
-                if(item.t) drawText(item.t);
-                if(item.c) drawText(item.c);
+
+                if(item.chord) drawText(item.chord, "#0f172a", "16px", "bold", "sans-serif", topYBase);
+
+                let currentY = yBase;
+                if(item.n) { drawText(item.n, "#0f172a", "15px", "bold", "sans-serif", currentY); currentY += 22; }
+                if(item.t) { drawText(item.t, "#475569", "14px", "bold", "sans-serif", currentY); currentY += 22; }
+                if(item.c) { drawText(item.c, "#dc2626", "14px", "bold", "monospace", currentY); currentY += 22; }
             });
         }
 
@@ -755,7 +937,7 @@
             let tsParts = document.getElementById('timesig-select').value.split('/');
             let vNumB = parseInt(tsParts[0]), vDenB = parseInt(tsParts[1]);
 
-            let mPL = cw < 600 ? (cw < 400 ? 1 : 2) : 4; 
+            let mPL = 4; 
             
             const lns = Math.ceil(exD.length/mPL);
             const nf = document.getElementById('notename-select').value;
@@ -766,101 +948,151 @@
             
             for(let l=0; l<lns; l++){
                 const ld = document.createElement("div"); 
-                ld.className="system-line"; 
+                ld.className="system-line custom-scrollbar"; 
                 cont.appendChild(ld);
                 
                 const mIL = Math.min(mPL, exD.length-(l*mPL)); 
-                // LIENZO EXPANSIVO: Elimina la asfixia de 850px para maximizar ancho
-                let mD=[], ltW=20, tw = cw - 40, co=70; 
+                let mD=[], co=70; 
+                let totalMinWidth = 0; 
                 
                 for(let m=0; m<mIL; m++){
                     const mi=(l*mPL)+m, me=exD[mi]; 
                     
                     const vn = me.n.map((n,j)=>{
-                        const nt = new VF.StaveNote({clef:document.getElementById('clef-select').value, keys:[`${n.p.nn.charAt(0)}${n.p.nn.substring(1)}/${n.p.oc}`], duration:n.r.d});
+                        const nt = new VF.StaveNote({
+                            clef: document.getElementById('clef-select').value, 
+                            keys:[`${n.p.nn.charAt(0)}${n.p.nn.substring(1)}/${n.p.oc}`], 
+                            duration: n.r.d
+                        });
                         if(n.r.dt) nt.addDot(0); 
                         
-                        const na = n.p.nn.substring(1), nl = n.p.nn.charAt(0);
-                        if(na !== '') { 
-                            nt.addAccidental(0, new VF.Accidental(na===''?'n':na)); 
-                        }
-                        
-                        if(j===0 && me.b) {
-                            nt.addAnnotation(0, new VF.Annotation(me.b.d).setFont("sans-serif",14,"bold").setVerticalJustification(VF.Annotation.VerticalJustify.TOP));
-                        }
-                        
-                        // Foso Protector: Bloques para obligar a VexFlow a espaciar
-                        nt.addAnnotation(0, new VF.Annotation(" ").setFont("sans-serif", 16).setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM));
-                        nt.addAnnotation(0, new VF.Annotation(" ").setFont("sans-serif", 16).setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM));
-
                         let txtN = '', txtT = '', txtC = '';
                         if(nf !== 'none') {
-                            txtN = nf==='anglo' ? nl.toUpperCase() + na.toLowerCase() : LN[nl]+(na==='b'?'b':(na==='#'?'#':''));
+                            const na = n.p.nn.substring(1), nl = n.p.nn.charAt(0);
+                            txtN = nf==='anglo' ? n.p.tn.replace(/\d/g,'') : LN[nl]+(na==='b'?'b':(na==='#'?'#':''));
                         }
-                        if(sdTonal) {
-                            txtT = n.p.l;
-                        }
-                        if(sdChord && me.rtM !== null && me.rtM !== undefined) {
-                            let iv = (n.p.md - me.rtM) % 12;
+                        if(sdTonal) txtT = n.p.l;
+                        if(sdChord && n.rtM !== null && n.rtM !== undefined) {
+                            let iv = (n.p.md - n.rtM) % 12;
                             if(iv < 0) iv += 12;
                             let chDegs = ['1', 'b2', '2', 'b3', '3', '4', '#4', '5', 'b6', '6', 'b7', '7'];
                             txtC = chDegs[iv] + ']'; 
                         }
                         
-                        nt.customData = { n: txtN, t: txtT, c: txtC };
+                        nt.customData = { chord: n.bD, n: txtN, t: txtT, c: txtC, beatGroup: n.r.beatGroup };
                         nt.setAttribute('id', `vf-note-${gIdx}`);
                         if(typeof nt.addClass === 'function') nt.addClass(`vf-note-${gIdx}`);
                         gIdx++;
                         return nt;
                     });
                     
-                    let bg = tsC.t==='compound' ? [new VF.Fraction(3,tsC.dn)] : (tsC.b===3&&tsC.dn===8?[new VF.Fraction(3,8)]:[new VF.Fraction(1,tsC.dn)]);
-                    const bm = VF.Beam.generateBeams(vn, {groups:bg});
+                    // LÓGICA DE BEAMING REESCRITA (Previene fallos y artefactos visuales)
+                    let beams = [];
+                    if (tsC.t === 'simple') {
+                        let groups = {};
+                        vn.forEach(nt => {
+                            let dur = nt.getDuration();
+                            if (['w', 'h', 'q'].includes(dur)) return; 
+                            
+                            let bgId = nt.customData.beatGroup;
+                            if (bgId !== undefined && bgId !== null) {
+                                if (!groups[bgId]) groups[bgId] = [];
+                                groups[bgId].push(nt);
+                            }
+                        });
+                        
+                        // Determinar la dirección de la plica y aplicarla uniformemente al grupo
+                        for (let bgId in groups) {
+                            let group = groups[bgId];
+                            if (group.length > 1) {
+                                let sumLine = 0;
+                                group.forEach(nt => sumLine += nt.getKeyProps()[0].line);
+                                let avgLine = sumLine / group.length;
+                                let stemDir = avgLine >= 3 ? -1 : 1; 
+                                
+                                group.forEach(nt => nt.setStemDirection(stemDir));
+                                beams.push(new VF.Beam(group));
+                            }
+                        }
+                    } else {
+                        // En métricas compuestas, delegamos al motor
+                        let bg = [new VF.Fraction(3, tsC.dn)];
+                        if(tsC.b === 3 && tsC.dn === 8) bg = [new VF.Fraction(3, 8)];
+                        beams = VF.Beam.generateBeams(vn, {groups: bg});
+                    }
+
                     const vc = new VF.Voice({num_beats: vNumB, beat_value: vDenB}).setStrict(false).addTickables(vn);
+                    
+                    VF.Accidental.applyAccidentals([vc], cK.v);
+
                     const fm = new VF.Formatter().joinVoices([vc]); 
-                    fm.preCalculateMinTotalWidth([vc]); 
-                    mD.push({me, vn, vc, bm, fm, mw:fm.getMinTotalWidth(), if:(m===0&&l===0), il:(mi===exD.length-1)});
+                    let minW = fm.preCalculateMinTotalWidth([vc]); 
+                    totalMinWidth += minW;
+                    
+                    mD.push({me, vn, vc, bm: beams, fm, mw: minW, if:(m===0&&l===0), il:(mi===exD.length-1)});
                 }
                 
-                mD.forEach(d => { d.aw = Math.max(d.mw+(d.if?co+20:30), tw/mIL); ltW+=d.aw; });
+                let availableWidth = Math.max(cw - 40, 800); 
+                let widthMultiplier = availableWidth / (totalMinWidth > 0 ? totalMinWidth : 1);
+                if(widthMultiplier < 1.5) widthMultiplier = 1.5; 
+                
+                let totalLineW = 0;
+                mD.forEach(d => {
+                    d.calcW = (d.mw * widthMultiplier) + (d.if ? co : 20) + 15;
+                    totalLineW += d.calcW;
+                });
                 
                 const rn = new VF.Renderer(ld, VF.Renderer.Backends.SVG); 
-                rn.resize(ltW, 180); 
+                rn.resize(totalLineW + 20, 320); 
                 const cx = rn.getContext(); 
                 let sx=10;
                 
+                let lineMaxY = 0;
+                
                 mD.forEach(d => {
-                    const st = new VF.Stave(sx, 20, d.aw); 
+                    const st = new VF.Stave(sx, 60, d.calcW); 
                     if(d.if) st.addClef(document.getElementById('clef-select').value).addKeySignature(cK.v).addTimeSignature(document.getElementById('timesig-select').value);
                     if(d.il) st.setEndBarType(VF.Barline.type.END); 
                     st.setContext(cx).draw();
                     
-                    d.fm.format([d.vc], d.aw-(d.if?co:20)); 
+                    d.fm.format([d.vc], d.calcW - (d.if?co:20)); 
                     d.vc.draw(cx, st); 
-                    d.bm.forEach(b=>b.setContext(cx).draw()); 
-
-                    let svgNode = ld.querySelector('svg');
-                    let yBase = st.getYForLine(4) + 35; 
-                    let injectData = [];
                     
+                    // Dibujar plicas manuales
+                    d.bm.forEach(b => b.setContext(cx).draw()); 
+
+                    let sMax = st.getBottomY() + 20; 
+                    d.vn.forEach(nt => {
+                        let nyMax = Math.max(...nt.getYs());
+                        if (nyMax > sMax) sMax = nyMax;
+                    });
+                    
+                    if (sMax > lineMaxY) lineMaxY = sMax;
+
+                    d.st = st;
+                    sx += d.calcW;
+                });
+                
+                let yBase = lineMaxY + 25; 
+                let topYBase = 30; 
+                let svgNode = ld.querySelector('svg');
+
+                mD.forEach(d => {
+                    let injectData = [];
                     d.vn.forEach(nt => {
                         injectData.push({
-                            x: nt.getAbsoluteX() + 7,
+                            x: nt.getNoteHeadBeginX() + 6,
+                            chord: nt.customData.chord,
                             n: nt.customData.n,
                             t: nt.customData.t,
                             c: nt.customData.c
                         });
                     });
-                    
-                    injectSvgText(svgNode, injectData, yBase);
-
-                    sx+=d.aw;
+                    injectSvgText(svgNode, injectData, yBase, topYBase);
                 });
             }
 
-            if (isP && currentNoteIndex !== -1) {
-                hlN(currentNoteIndex);
-            }
+            if (isP && currentNoteIndex !== -1) hlN(currentNoteIndex);
         }
 
         window.addEventListener('resize', () => { if(exD.length>0 && !isP) dSR(); });
@@ -946,14 +1178,15 @@
             }
 
             let ev=[], be=[], ce=[], ct=0, gi=0;
+            let cpm = (document.getElementById('rhythm-select').value === 'basic' || tc.b === 3) ? 1 : 2;
+            let chordDurSec = ((RHY[tc.bu].b * tc.b) / cpm) * bD;
             
             exD.forEach((m) => {
-                if(m.b){
-                    let md = m.n.reduce((s,n) => s+n.r.b, 0); 
-                    be.push({time:ct*bD, p:Tone.Frequency(m.b.md,"midi").toNote(), d:md*bD, s:m.b.d}); 
-                    if(m.cm) ce.push({time:ct*bD, p:m.cm.map(v=>Tone.Frequency(v,"midi").toNote()), d:md*bD});
-                }
                 m.n.forEach(n => {
+                    if(n.bD){
+                        be.push({time:ct*bD, p:Tone.Frequency(n.bM,"midi").toNote(), d:chordDurSec, s:n.bD}); 
+                        ce.push({time:ct*bD, p:n.cmM.map(v=>Tone.Frequency(v,"midi").toNote()), d:chordDurSec});
+                    }
                     ev.push({time:ct*bD, p:n.p.tn, d:n.r.td, i:gi}); 
                     gi++; 
                     ct+=n.r.b;
@@ -995,6 +1228,119 @@
             }, ev).start(tO);
             
             Tone.Transport.start();
+        }
+
+        window.onload=()=>{ 
+            lCfg(); 
+            let lvl = parseInt(document.getElementById('level-select').value);
+            if(lvl >= 7) document.getElementById('lbl-deg-chord').classList.remove('hidden');
+            
+            ['vol-melody', 'vol-metro', 'vol-cadence', 'vol-bass'].forEach(id => document.getElementById(id).addEventListener('input', updateVolumes));
+            ['cb-bass', 'cb-chords'].forEach(id => document.getElementById(id).addEventListener('change', updateVolumes));
+            ['cb-deg-tonal', 'cb-deg-chord', 'notename-select'].forEach(id => {
+                let el = document.getElementById(id);
+                if (el) el.addEventListener('change', () => { if(exD.length > 0) dSR(); });
+            });
+
+            let storedFavs = localStorage.getItem('as_favs');
+            if (storedFavs) { favs = JSON.parse(storedFavs); renderFavs(); }
+
+            document.getElementById('btn-generate').click(); 
+        };
+        
+        document.getElementById('btn-generate').onclick=()=>{ 
+            document.getElementById('measures-input').value = Math.min(Math.max(parseInt(document.getElementById('measures-input').value)||8,4),32); 
+            saveCfg(); 
+            generateExercise(); 
+        };
+        
+        document.getElementById('btn-play').onclick=async()=>{ await Tone.start(); isP?stopPlayback():playMelody(); };
+        
+        ['level-select','clef-select','timesig-select','rhythm-select'].forEach(i => document.getElementById(i).onchange=(e)=>{
+            if(i==='level-select') {
+                const lvl = parseInt(e.target.value);
+                if (lvl >= 7) document.getElementById('lbl-deg-chord').classList.remove('hidden');
+                else { document.getElementById('lbl-deg-chord').classList.add('hidden'); document.getElementById('cb-deg-chord').checked = false; }
+            }
+            document.getElementById('btn-generate').click();
+        });
+        
+        window.addEventListener('keydown', e => {
+            if(e.code==='Space') { e.preventDefault(); document.getElementById('btn-play').click(); }
+            else if(e.code==='KeyG') { e.preventDefault(); document.getElementById('btn-generate').click(); }
+            else if(e.code==='KeyM') { e.preventDefault(); document.getElementById('cb-metro-cont').click(); }
+            else if(e.code==='KeyF') { e.preventDefault(); document.getElementById('btn-save-fav').click(); }
+            else if(e.code==='Escape') { document.getElementById('help-modal').close(); document.getElementById('favorites-sidebar').classList.remove('open'); }
+        });
+
+        function exportToMusicXML() {
+            if(exD.length === 0) return alert("Genere un ejercicio primero.");
+            let xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n<score-partwise version="3.1">\n`;
+            xml += `  <work><work-title>${cK.n}</work-title></work>\n  <part-list><score-part id="P1"><part-name>Melody</part-name></score-part></part-list>\n  <part id="P1">\n`;
+
+            let tsP = document.getElementById('timesig-select').value.split('/');
+            let cf = document.getElementById('clef-select').value;
+            let cS = 'G', cL = '2';
+            if(cf === 'bass') { cS = 'F'; cL = '4'; } else if(cf === 'alto') { cS = 'C'; cL = '3'; } else if(cf === 'tenor') { cS = 'C'; cL = '4'; }
+
+            exD.forEach((m, i) => {
+                xml += `    <measure number="${i + 1}">\n`;
+                if (i === 0) {
+                    xml += `      <attributes>\n        <divisions>24</divisions>\n        <key><fifths>${cK.ff}</fifths><mode>${cK.t==='maj'?'major':'minor'}</mode></key>\n`;
+                    xml += `        <time><beats>${tsP[0]}</beats><beat-type>${tsP[1]}</beat-type></time>\n        <clef><sign>${cS}</sign><line>${cL}</line></clef>\n      </attributes>\n`;
+                }
+                m.n.forEach(n => {
+                    let st = n.p.nn.charAt(0).toUpperCase();
+                    let alt = n.p.nn.includes('#') ? 1 : (n.p.nn.includes('b') ? -1 : 0);
+                    let typ = {'w':'whole','h':'half','q':'quarter','8':'eighth','16':'16th','32':'32nd'}[n.r.d] || 'quarter';
+                    xml += `      <note>\n        <pitch>\n          <step>${st}</step>\n${alt!==0?`          <alter>${alt}</alter>\n`:''}          <octave>${n.p.oc}</octave>\n        </pitch>\n`;
+                    xml += `        <duration>${n.r.b * 24}</duration>\n        <type>${typ}</type>\n${n.r.dt?'        <dot/>\n':''}      </note>\n`;
+                });
+                xml += `    </measure>\n`;
+            });
+            xml += `  </part>\n</score-partwise>`;
+            
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' }));
+            a.download = `Solfeo_${cK.n.replace(/ /g,'_')}.musicxml`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        async function exportToJPEG(){
+            if(exD.length===0) return;
+            const s = Array.from(document.querySelectorAll('#score-container svg'));
+            if(s.length===0) return;
+            const b = document.querySelector('[onclick="exportToJPEG()"]');
+            const o = b.innerText;
+            b.innerText='...';
+            b.disabled=true;
+            try{
+                let th=0, mw=0;
+                const sd = s.map(x=>{
+                    let w=parseFloat(x.getAttribute('width'))||x.clientWidth, h=parseFloat(x.getAttribute('height'))||x.clientHeight;
+                    th+=h; if(w>mw) mw=w;
+                    let ht=new XMLSerializer().serializeToString(x);
+                    if(!ht.match(/^<svg[^>]* width="/)) ht=ht.replace('<svg',`<svg width="${w}" height="${h}"`);
+                    return {ht,w,h};
+                });
+                const cv = document.createElement('canvas');
+                cv.width = mw+40; cv.height = th+(s.length*20)+40;
+                const cx = cv.getContext('2d');
+                cx.fillStyle='white'; cx.fillRect(0,0,cv.width,cv.height);
+                let cy=20;
+                for(const d of sd){
+                    const im = new Image(), ur = URL.createObjectURL(new Blob([d.ht],{type:'image/svg+xml;charset=utf-8'}));
+                    await new Promise((r,j)=>{
+                        im.onload=()=>{ cx.drawImage(im,(cv.width-d.w)/2,cy,d.w,d.h); cy+=d.h+20; URL.revokeObjectURL(ur); r(); };
+                        im.onerror=j; im.src=ur;
+                    });
+                }
+                const a = document.createElement('a');
+                a.download=`Solfeo_${cK.n.replace(/ /g,'_')}.jpg`;
+                a.href=cv.toDataURL('image/jpeg',1.0);
+                a.click();
+            } finally { b.innerText=o; b.disabled=false; }
         }
 
         function saveFav() {
@@ -1051,102 +1397,8 @@
             renderFavs();
         };
 
-        ['vol-melody', 'vol-metro', 'vol-cadence', 'vol-bass'].forEach(id => document.getElementById(id).addEventListener('input', updateVolumes));
-        ['cb-bass', 'cb-chords'].forEach(id => document.getElementById(id).addEventListener('change', updateVolumes));
-        ['cb-deg-tonal', 'cb-deg-chord', 'notename-select'].forEach(id => document.getElementById(id).addEventListener('change', () => { if(exD.length > 0) dSR(); }));
-
         document.getElementById('btn-save-fav').addEventListener('click', saveFav);
 
-        document.getElementById('btn-generate').onclick=()=>{ 
-            document.getElementById('measures-input').value = Math.min(Math.max(parseInt(document.getElementById('measures-input').value)||8,4),32); 
-            saveCfg(); 
-            generateExercise(); 
-        };
-        
-        document.getElementById('btn-play').onclick=async()=>{ await Tone.start(); isP?stopPlayback():playMelody(); };
-        
-        ['level-select','clef-select','timesig-select','rhythm-select'].forEach(i => document.getElementById(i).onchange=(e)=>{
-            if(i==='level-select') {
-                const lvl = parseInt(e.target.value);
-                const lblChord = document.getElementById('lbl-deg-chord');
-                if (lvl >= 7) {
-                    lblChord.classList.remove('hidden');
-                } else {
-                    lblChord.classList.add('hidden');
-                    document.getElementById('cb-deg-chord').checked = false;
-                }
-            }
-            document.getElementById('btn-generate').click();
-        });
-        
-        window.addEventListener('keydown', e => {
-            if(e.code==='Space') { e.preventDefault(); document.getElementById('btn-play').click(); }
-            else if(e.code==='KeyG') { e.preventDefault(); document.getElementById('btn-generate').click(); }
-            else if(e.code==='KeyM') { e.preventDefault(); document.getElementById('cb-metro-cont').click(); }
-            else if(e.code==='KeyF') { e.preventDefault(); document.getElementById('btn-save-fav').click(); }
-            else if(e.code==='KeyX') { e.preventDefault(); exportToMusicXML(); }
-            else if(e.code==='KeyJ') { e.preventDefault(); exportToJPEG(); }
-            else if(e.code==='Escape') { document.getElementById('help-modal').close(); document.getElementById('favorites-sidebar').classList.remove('open'); }
-        });
-        
-        window.onload=()=>{ 
-            lCfg(); 
-            
-            let lvl = parseInt(document.getElementById('level-select').value);
-            if(lvl >= 7) document.getElementById('lbl-deg-chord').classList.remove('hidden');
-
-            let storedFavs = localStorage.getItem('as_favs');
-            if (storedFavs) { favs = JSON.parse(storedFavs); renderFavs(); }
-            document.getElementById('btn-generate').click(); 
-        };
-        
-        async function exportToJPEG(){
-            if(exD.length===0) return;
-            const s = Array.from(document.querySelectorAll('#score-container svg'));
-            if(s.length===0) return;
-            
-            const b = document.querySelector('[onclick="exportToJPEG()"]');
-            const o = b.innerText;
-            b.innerText='...';
-            b.disabled=true;
-            
-            try{
-                let th=0, mw=0;
-                const sd = s.map(x=>{
-                    let w=parseFloat(x.getAttribute('width'))||x.clientWidth, h=parseFloat(x.getAttribute('height'))||x.clientHeight;
-                    th+=h; if(w>mw) mw=w;
-                    let ht=new XMLSerializer().serializeToString(x);
-                    if(!ht.match(/^<svg[^>]* width="/)) ht=ht.replace('<svg',`<svg width="${w}" height="${h}"`);
-                    return {ht,w,h};
-                });
-                
-                const cv = document.createElement('canvas');
-                cv.width = mw+40; 
-                cv.height = th+(s.length*20)+40;
-                const cx = cv.getContext('2d');
-                cx.fillStyle='white'; 
-                cx.fillRect(0,0,cv.width,cv.height);
-                
-                let cy=20;
-                for(const d of sd){
-                    const im = new Image(), ur = URL.createObjectURL(new Blob([d.ht],{type:'image/svg+xml;charset=utf-8'}));
-                    await new Promise((r,j)=>{
-                        im.onload=()=>{ cx.drawImage(im,(cv.width-d.w)/2,cy,d.w,d.h); cy+=d.h+20; URL.revokeObjectURL(ur); r(); };
-                        im.onerror=j; 
-                        im.src=ur;
-                    });
-                }
-                const a = document.createElement('a');
-                a.download=`Solfeo_${cK.n.replace(/ /g,'_')}.jpg`;
-                a.href=cv.toDataURL('image/jpeg',1.0);
-                a.click();
-            } finally {
-                b.innerText=o; 
-                b.disabled=false;
-            }
-        }
-        
-        function exportToMusicXML(){ alert("MusicXML no soportado en esta vista. Exporte a JPEG."); }
     </script>
 </body>
 </html>
